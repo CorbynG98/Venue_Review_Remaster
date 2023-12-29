@@ -5,15 +5,17 @@ import {
   createVenuePhoto,
   getById,
   getCategories,
-  getPhotoByFilename,
   getVenues,
   setNewPrimary,
-  updateVenue,
+  updateVenue
 } from '../controllers/venue.controller';
 import { removeVenuePhoto } from '../models/venuePhoto.model';
-import authenticate from '../util/authenticate.middleware';
+import user_authenticate from '../util/user_authenticate.middleware';
+import venue_authenticate from '../util/venue_authenticate.middleware';
 
 const validateVenueData = [
+  check('venue_name').notEmpty().withMessage('City is required'),
+  check('category_id').notEmpty().withMessage('City is required'),
   check('latitude')
     .isFloat({ min: -90, max: 90 })
     .withMessage('Latitude must be a number between -90 and 90'),
@@ -21,7 +23,7 @@ const validateVenueData = [
     .isFloat({ min: -180, max: 180 })
     .withMessage('Longitude must be a number between -180 and 180'),
   check('city').notEmpty().withMessage('City is required'),
-  check('Address').notEmpty().withMessage('Address is required'),
+  check('address').notEmpty().withMessage('Address is required'),
   check('short_description')
     .notEmpty()
     .withMessage('Short description is required'),
@@ -91,25 +93,24 @@ const user_routes = (app: Express) => {
   app
     .route('/venues')
     .get(validateQueryParams, getVenues)
-    .post([...validateVenueData, authenticate], createVenue);
+    .post([...validateVenueData, user_authenticate], createVenue);
 
   app
     .route('/venues/:id')
     .get(getById)
-    .patch([...validateVenueData, authenticate], updateVenue);
+    .patch([...validateVenueData, venue_authenticate], updateVenue);
 
   app.route('/categories').get(getCategories);
 
-  app.route('/venues/:id/photos').post(authenticate, createVenuePhoto);
+  app.route('/venues/:id/photos').post(venue_authenticate, createVenuePhoto);
 
   app
     .route('/venues/:id/photos/:photoFilename')
-    .get(getPhotoByFilename)
-    .delete(authenticate, removeVenuePhoto);
+    .delete(user_authenticate, removeVenuePhoto);
 
   app
     .route('/venues/:id/photos/:photoFilename/setPrimary')
-    .post(authenticate, setNewPrimary);
+    .post(venue_authenticate, setNewPrimary);
 };
 
 export default user_routes;

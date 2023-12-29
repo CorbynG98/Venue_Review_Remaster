@@ -1,7 +1,7 @@
 import { Express } from 'express';
 import { check } from 'express-validator';
 import { create, login, signout } from '../controllers/auth.controller';
-import authenticate from '../util/authenticate.middleware';
+import authenticate from '../util/user_authenticate.middleware';
 
 function testEmail(email: string) {
   let re =

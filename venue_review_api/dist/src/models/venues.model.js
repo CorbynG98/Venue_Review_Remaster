@@ -1,18 +1,11 @@
-'use strict';
-Object.defineProperty(exports, '__esModule', { value: true });
-exports.updateVenue =
-  exports.getVenues =
-  exports.getBVenueById =
-  exports.createVenue =
-  exports.checkVenueExists =
-  exports.checkVenueAndPhotoExists =
-    void 0;
-const db_1 = require('../config/db');
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.updateVenue = exports.getVenues = exports.getVenueById = exports.createVenue = void 0;
+const db_1 = require("../config/db");
 const getVenues = (values, where_conditions) => {
-  // values = [lat, lat, long, where_conditions, cost, cost, star, star, order, limit, offset]
-  return new Promise((resolve, reject) => {
-    (0, db_1.getPool)().query(
-      `
+    // values = [lat, lat, long, where_conditions, cost, cost, star, star, order, limit, offset]
+    return new Promise((resolve, reject) => {
+        (0, db_1.getPool)().query(`
       SELECT 
         v.venue_id,
         v.venue_name,
@@ -36,44 +29,82 @@ const getVenues = (values, where_conditions) => {
         AND (avg_star_rating >= ? OR ? IS NULL)
       ORDER BY ?
       LIMIT ?
-      OFFSET ?`,
-      values,
-      (err, result) => {
-        if (err) return reject(err);
-        resolve(result);
-      },
-    );
-  });
+      OFFSET ?`, values, (err, result) => {
+            if (err)
+                return reject(err);
+            resolve(result);
+        });
+    });
 };
 exports.getVenues = getVenues;
 const createVenue = (values) => {
-  return new Promise((resolve, reject) => {
-    reject('Not implemented');
-  });
+    return new Promise((resolve, reject) => {
+        (0, db_1.getPool)().query('INSERT INTO Venue (venue_id, venue_name, category_id, city, short_description, long_description, address, latitude, longitude, admin_id, date_added) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', values, (err) => {
+            if (err)
+                return reject(err);
+            resolve();
+        });
+    });
 };
 exports.createVenue = createVenue;
-const getBVenueById = (values) => {
-  return new Promise((resolve, reject) => {
-    reject('Not implemented');
-  });
+const getVenueById = (values) => {
+    return new Promise((resolve, reject) => {
+        (0, db_1.getPool)().query(`
+      SELECT
+        v.venue_name,
+        v.admin_id,
+        u.username,
+        v.category_id,
+        c.category_name,
+        c.category_description,
+        city,
+        short_description,
+        long_description,
+        date_added,
+        address,
+        latitude,
+        longitude,
+        GROUP_CONCAT(CONCAT_WS('^', vp.photo_filename, vp.photo_description, vp.is_primary) SEPARATOR '[]') as photos
+      FROM Venue v
+      JOIN User u ON v.admin_id = u.user_id
+      JOIN VenueCategory c ON c.category_id = v.category_id
+      LEFT JOIN VenuePhoto vp ON vp.venue_id = v.venue_id
+      WHERE v.venue_id = ?
+      GROUP BY v.venue_id;`, values, (err, result) => {
+            if (err)
+                return reject(err);
+            // Do some processing on the photos object, to format it nicely
+            result[0].photos = result[0].photos.split('[]').map((photo) => {
+                const [photo_filename, photo_description, is_primary] = photo.split('^');
+                let is_primary_bool = is_primary == '1' ? true : false;
+                return {
+                    photo_filename,
+                    photo_description,
+                    is_primary_bool,
+                };
+            });
+            resolve(result[0]);
+        });
+    });
 };
-exports.getBVenueById = getBVenueById;
+exports.getVenueById = getVenueById;
 const updateVenue = (values) => {
-  return new Promise((resolve, reject) => {
-    reject('Not implemented');
-  });
+    return new Promise((resolve, reject) => {
+        (0, db_1.getPool)().query(`
+      UPDATE Venue SET
+        venue_name = ?,
+        category_id = ?,
+        city = ?,
+        short_description = ?,
+        long_description = ?,
+        address = ?,
+        latitude = ?,
+        longitude = ?
+      WHERE venue_id = ?`, values, (err) => {
+            if (err)
+                return reject(err);
+            resolve();
+        });
+    });
 };
 exports.updateVenue = updateVenue;
-const checkVenueExists = (values) => {
-  return new Promise((resolve, reject) => {
-    reject('Not implemented');
-  });
-};
-exports.checkVenueExists = checkVenueExists;
-// UPDATE THIS TO SELECT ONLY PROPERTIES WE WANT, THEN BUILD A MODEL FOR IT TO SET IN PROMISE
-const checkVenueAndPhotoExists = (values) => {
-  return new Promise((resolve, reject) => {
-    reject('Not implemented');
-  });
-};
-exports.checkVenueAndPhotoExists = checkVenueAndPhotoExists;

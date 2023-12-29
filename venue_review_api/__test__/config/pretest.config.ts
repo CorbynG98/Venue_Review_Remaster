@@ -89,6 +89,8 @@ const resetDatabase = (doUserSampleRebuild = false) => {
         ),
       )
       .then(() => {
+        // Probably only set this if we change our password hashing in some way, so we can get a new list users with up to date hashes
+        // We are using slow hashing, so it takes some time to generate all the samples. And it's not necessary to do every time.
         if (doUserSampleRebuild) {
           buildUserSqlResampleCode();
         } else {
@@ -103,6 +105,11 @@ const resetDatabase = (doUserSampleRebuild = false) => {
       .then(() =>
         resampleDatabase(
           'resources/database/test/sample_data/resample_venue.sql',
+        ),
+      )
+      .then(() =>
+        resampleDatabase(
+          'resources/database/test/sample_data/resample_venue_photo.sql',
         ),
       )
       .then(() =>

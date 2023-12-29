@@ -1,15 +1,24 @@
+import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { getVenues as get_venues } from '../models/venues.model';
+import { v4 as uuidv4 } from 'uuid';
+import { getByToken as get_session_by_token } from '../models/sessions.model';
+import { getCategories as get_categories } from '../models/venueCategory.model';
+import {
+  createVenue as create_venue,
+  getVenueById as get_venue_by_id,
+  getVenues as get_venues,
+  updateVenue as update_venue,
+} from '../models/venues.model';
 
-interface params {
+interface Params {
   category_id: string | null;
   admin_id: string | null;
   city: string | null;
   venue_name: string | null;
 }
 
-function generateConditionsAndValues(params: params) {
+function generateConditionsAndValues(params: Params) {
   const conditions = [];
   const condition_values = [];
 
@@ -34,7 +43,7 @@ const getVenues = async (req: Request, res: Response) => {
     return res.status(400).json({ errors: validation.array() });
   }
 
-  let params: params = {
+  let params: Params = {
     category_id:
       req.query.category != null && req.query.category.toString().length > 0
         ? `${req.query.category?.toString()}`
@@ -72,12 +81,12 @@ const getVenues = async (req: Request, res: Response) => {
 
   let maxCostRating =
     req.query.maxCostRating != null &&
-    req.query.maxCostRating.toString().length > 0
+      req.query.maxCostRating.toString().length > 0
       ? Number(req.query.maxCostRating?.toString())
       : null;
   let minStarRating =
     req.query.minStarRating != null &&
-    req.query.minStarRating.toString().length > 0
+      req.query.minStarRating.toString().length > 0
       ? Number(req.query.minStarRating?.toString())
       : null;
 
@@ -108,26 +117,89 @@ const getVenues = async (req: Request, res: Response) => {
 };
 
 const createVenue = async (req: Request, res: Response) => {
-  throw new Error('Not implemented');
+  const validation = validationResult(req);
+  if (!validation.isEmpty()) {
+    return res.status(400).json({ errors: validation.array() });
+  }
+
+  // Only doing this so we can get the admin_id. Not verifying auth, that has already been done.
+  // Because we have already checked, we shouldn't have to try catch this code either.
+  // We know it's valid at this point, and can trust the process.
+  let token = req.header('Authorization')?.toString() ?? "";
+  let hashedToken = crypto.createHash('sha512').update(token).digest('hex');
+  let user_id = await get_session_by_token(hashedToken);
+
+  let values = [
+    uuidv4().replace(/-/g, ''),
+    req.body.venue_name,
+    req.body.category_id,
+    req.body.city,
+    req.body.short_description,
+    req.body.long_description,
+    req.body.address,
+    req.body.latitude,
+    req.body.longitude,
+    user_id,
+    new Date(),
+  ];
+
+  create_venue(values)
+    .then(() => {
+      res.status(201).json({ status: 201, message: values[0] });
+    })
+    .catch((err) => {
+      res.status(500).json({ status: 500, message: err?.code ?? err });
+    });
 };
 
 const getById = async (req: Request, res: Response) => {
-  throw new Error('Not implemented');
+  get_venue_by_id(req.params.id)
+    .then((result) => {
+      res.status(200).json(result);
+    })
+    .catch((err) => {
+      res.status(500).json({ status: 500, message: err?.code ?? err });
+    });
 };
 
 const updateVenue = async (req: Request, res: Response) => {
-  throw new Error('Not implemented');
+  const validation = validationResult(req);
+  if (!validation.isEmpty()) {
+    return res.status(400).json({ errors: validation.array() });
+  }
+
+  let values = [
+    req.body.venue_name,
+    req.body.category_id,
+    req.body.city,
+    req.body.short_description,
+    req.body.long_description,
+    req.body.address,
+    req.body.latitude,
+    req.body.longitude,
+    req.params.id,
+  ];
+
+  update_venue(values)
+    .then(() => {
+      res.status(200).json({ status: 200, message: req.params.id });
+    })
+    .catch((err) => {
+      res.status(500).json({ status: 500, message: err?.code ?? err });
+    });
 };
 
 const getCategories = async (req: Request, res: Response) => {
-  throw new Error('Not implemented');
+  get_categories()
+    .then((result) => {
+      res.status(200).json(result);
+    })
+    .catch((err) => {
+      res.status(500).json({ status: 500, message: err?.code ?? err });
+    });
 };
 
 const createVenuePhoto = async (req: Request, res: Response) => {
-  throw new Error('Not implemented');
-};
-
-const getPhotoByFilename = async (req: Request, res: Response) => {
   throw new Error('Not implemented');
 };
 
@@ -144,9 +216,9 @@ export {
   createVenuePhoto,
   getById,
   getCategories,
-  getPhotoByFilename,
   getVenues,
   removePhoto,
   setNewPrimary,
-  updateVenue,
+  updateVenue
 };
+

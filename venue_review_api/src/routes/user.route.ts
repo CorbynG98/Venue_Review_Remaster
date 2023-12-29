@@ -6,7 +6,7 @@ import {
   updateUser,
   uploadPhoto,
 } from '../controllers/user.controller';
-import authenticate from '../util/authenticate.middleware';
+import authenticate from '../util/user_authenticate.middleware';
 
 const validateUserData = [
   check('username').notEmpty().withMessage('Username is required'),

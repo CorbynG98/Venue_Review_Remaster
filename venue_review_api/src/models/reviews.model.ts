@@ -1,17 +1,20 @@
 import { QueryError } from 'mysql2';
 import { getPool } from '../config/db';
 
-export default interface ReviewResource {
-  review_id: string;
-  reviewed_venue_id: string;
-  review_author_id: string;
+export default interface VenueReviewsResource {
+  review_author: ReviewerAuthorResource
   review_body: string;
   star_rating: number;
   cost_rating: string;
   time_posted: Date;
 }
 
-const getVenueReviews = (values: string[]): Promise<ReviewResource[]> => {
+interface ReviewerAuthorResource {
+  user_id: string;
+  username: string;
+}
+
+const getVenueReviews = (values: string): Promise<VenueReviewsResource[]> => {
   return new Promise((resolve, reject) => {
     getPool().query(
       `SELECT review_author_id, username, review_body, star_rating, cost_rating, time_posted 
@@ -22,32 +25,56 @@ const getVenueReviews = (values: string[]): Promise<ReviewResource[]> => {
       values,
       (err: QueryError | null, result: any) => {
         if (err) return reject(err);
-        resolve(result);
+
+        result.forEach((element: any) => {
+          element.review_author = {
+            user_id: element.review_author_id,
+            username: element.username,
+          };
+          delete element.review_author_id;
+          delete element.username;
+        });
+
+        resolve(result as VenueReviewsResource[]);
       },
     );
   });
 };
 
 // UPDATE SELECT TO GET ONLY DATA WE WANT, THEN UPDATE PROMISE TO REMOVE "ANY"
-const checkReviewer = (user_id: string): Promise<any> => {
+const checkReviewer = (user_id: string, venue_id: string): Promise<boolean> => {
   return new Promise((resolve, reject) => {
+    // values = [venue_id, user_id, venue_id, user_id]
     getPool().query(
-      'SELECT user_id FROM Venue JOIN Review ON Review.reviewed_venue_id = venue_id WHERE Venue.admin_id = ? OR Review.review_author_id = ?',
-      [user_id, user_id],
+      `
+      SELECT
+        (SELECT
+            CASE 
+                WHEN (SELECT review_id FROM Review r WHERE r.reviewed_venue_id = ? AND r.review_author_id = ?) IS NULL THEN TRUE 
+                ELSE FALSE 
+            END
+        ) as can_review
+      FROM Venue v
+      WHERE
+      v.venue_id = ?
+      AND v.admin_id != ?`,
+      [venue_id, user_id, venue_id, user_id],
       (err: QueryError | null, result: any) => {
         if (err) return reject(err);
-        resolve(result);
+        if (result == '' || result == null || result.length == 0)
+          return resolve(false);
+        resolve(result[0].can_review == '1');
       },
     );
   });
 };
 
-const createReview = (venue_id: string, values: string[]): Promise<void> => {
+const createReview = (values: string[]): Promise<void> => {
   return new Promise((resolve, reject) => {
     getPool().query(
-      'INSERT INTO Review (reviewed_venue_id, review_body, star_rating, cost_rating, time_posted, review_author_id) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO Review (review_id, reviewed_venue_id, review_body, star_rating, cost_rating, time_posted, review_author_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
       values,
-      (err: QueryError | null, result: any) => {
+      (err: QueryError | null) => {
         if (err) return reject(err);
         resolve();
       },
@@ -62,3 +89,4 @@ const getUserReviews = (values: string[]): Promise<string> => {
 };
 
 export { checkReviewer, createReview, getUserReviews, getVenueReviews };
+

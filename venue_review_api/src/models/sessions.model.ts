@@ -48,4 +48,23 @@ const removeSession = (token: string): Promise<void> => {
   });
 };
 
-export { createSession, getByToken, removeSession };
+const verifyVenueAuth = (
+  user_id: string,
+  venue_id: string,
+): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
+    getPool().query(
+      'SELECT venue_id FROM Venue WHERE admin_id = ? AND venue_id = ?',
+      [user_id, venue_id],
+      (err: QueryError | null, result: any) => {
+        if (err) return reject(err);
+        if (result == '' || result == null || result.length == 0)
+          return reject(null);
+        return resolve(true);
+      },
+    );
+  });
+};
+
+export { createSession, getByToken, removeSession, verifyVenueAuth };
+
