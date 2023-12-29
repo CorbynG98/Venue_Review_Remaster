@@ -1,0 +1,6 @@
+{
+  "testEnvironment": "node",
+  "preset": "ts-jest",
+  "coveragePathIgnorePatterns": ["/node_modules/", "/dist", "/public"],
+  "globalSetup": "<rootDir>/__test__/config/pretest.config.ts"
+}

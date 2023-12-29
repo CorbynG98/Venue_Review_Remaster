@@ -1,0 +1,7 @@
+node_modules
+npm-debug.log
+.prettierignore
+.prettierrc.json
+.jest.config.json
+*.md
+__test__
