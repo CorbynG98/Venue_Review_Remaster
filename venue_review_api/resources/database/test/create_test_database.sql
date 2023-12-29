@@ -1,5 +1,5 @@
 -- MySQL scripts for dropping existing tables and recreating the database table structure
-use venue_review_remaster;
+use venue_review_remaster_test;
 
 ### DROP EVERYTHING ###
 # Tables/views must be dropped in reverse order due to referential constraints (foreign keys).
@@ -17,6 +17,8 @@ DROP
   TABLE IF EXISTS Venue;
 DROP 
   TABLE IF EXISTS VenueCategory;
+DROP 
+  TABLE IF EXISTS Session;
 DROP 
   TABLE IF EXISTS User;
 

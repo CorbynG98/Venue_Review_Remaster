@@ -31,7 +31,7 @@
    `grant all privileges on venue_review.* to 'venue_review'@'%';`<br />
    In the interest of space and time, I grant all privileges to all tables in the venue-review table. In a real situation, specifying a list of grants is much more secure and safe. Up to you to research.<br />
    - An example with more fine grained permissions could be as such, and what I use on my public databases with mysql:<br />
-     `grant select,insert,alter,delete,create,references,update on venue_review.* to 'venue-review'@'%';`
+     `grant select,insert,alter,delete,create,references,update on venue_review.* to 'venue_review'@'%';`
    - For a test user, this might also include `index`, `drop`, etc. so you have some extra functionality.
 9. Run the command `flush privileges;` to finalise the permission process. Without this command, the permissions will not be applied.
 10. `quit` out of mysql, and follow the same access command from step 4, with the new username and password. The username does not need the host (`@'[host]`)

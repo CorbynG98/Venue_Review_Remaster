@@ -49,4 +49,3 @@ const removeSession = (token: string): Promise<void> => {
 };
 
 export { createSession, getByToken, removeSession };
-

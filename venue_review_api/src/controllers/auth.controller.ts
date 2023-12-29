@@ -88,27 +88,36 @@ const create = async (req: Request, res: Response) => {
     .hash(req.body.password, 13)
     .then((result) => {
       user_values.push(result);
-      create_user(user_values).then(() => {
-        // Do login here now too, I guess?
-        let token = crypto
-          .createHash('sha512')
-          .update(uuidv4().replace(/-/g, ''))
-          .digest('hex');
-        let hashedToked = crypto
-          .createHash('sha512')
-          .update(token)
-          .digest('hex');
-        let session_values = [
-          uuidv4().replace(/-/g, ''),
-          hashedToked,
-          new Date(),
-          null,
-          user_id,
-        ];
-        create_session(session_values).then(() => {
-          res.status(200).json({ username: req.body.username, token: token });
+      create_user(user_values)
+        .then(() => {
+          // Do login here now too, I guess?
+          let token = crypto
+            .createHash('sha512')
+            .update(uuidv4().replace(/-/g, ''))
+            .digest('hex');
+          let hashedToked = crypto
+            .createHash('sha512')
+            .update(token)
+            .digest('hex');
+          let session_values = [
+            uuidv4().replace(/-/g, ''),
+            hashedToked,
+            new Date(),
+            null,
+            user_id,
+          ];
+          create_session(session_values).then(() => {
+            res.status(200).json({ username: req.body.username, token: token });
+          });
+        })
+        .catch((err) => {
+          if (err.code == 'ER_DUP_ENTRY') {
+            return res
+              .status(400)
+              .json({ status: 400, message: 'User already exists' });
+          }
+          res.status(500).json({ status: 500, message: err?.code ?? err });
         });
-      });
     })
     .catch((err) => {
       res.status(500).json({ status: 500, message: err?.code ?? err });

@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 import fs from 'fs';
 import { createPool, getPool } from '../../src/config/db';
 
@@ -76,7 +77,7 @@ const resampleDatabase = (sampleFileName: string) => {
   });
 };
 
-const resetDatabase = () => {
+const resetDatabase = (doUserSampleRebuild = false) => {
   return new Promise<void>((resolve, reject) => {
     console.log('\nResetting database...');
     // Test connection to database
@@ -87,6 +88,13 @@ const resetDatabase = () => {
           'resources/database/test/sample_data/resample_venue_category.sql',
         ),
       )
+      .then(() => {
+        if (doUserSampleRebuild) {
+          buildUserSqlResampleCode();
+        } else {
+          resolve();
+        }
+      })
       .then(() =>
         resampleDatabase(
           'resources/database/test/sample_data/resample_users.sql',
@@ -109,6 +117,62 @@ const resetDatabase = () => {
       .catch(() => {
         return reject();
       });
+  });
+};
+
+interface DefaultUsers {
+  properties: string[];
+  usersData: string[][];
+}
+
+const buildUserSqlResampleCode = () => {
+  return new Promise<void>((resolve, reject) => {
+    // Read sample database sql file.
+    fs.readFile(
+      'resources/database/test/default_users.json',
+      (read_err, read_result) => {
+        if (read_err) {
+          console.log(
+            `Unable to read 'resources/database/test/default_users.json'`,
+          );
+          return reject();
+        }
+
+        const defaultUsers = JSON.parse(read_result.toString()) as DefaultUsers;
+        let SQLStatement =
+          'use venue_review_remaster_test;\n\nINSERT INTO User\n\t(user_id, username, email, given_name, family_name, password)\nVALUES\n\t';
+        // Create an array of promises
+        let hashPromises = defaultUsers.usersData.map((user) => {
+          return bcrypt.hash(user[5], 13).then((result) => {
+            return `('${user[0]}', '${user[1]}', '${user[2]}', '${user[3]}', '${user[4]}', '${result}'),\n\t`;
+          });
+        });
+
+        // Wait for all hash operations to complete
+        Promise.all(hashPromises)
+          .then((hashResults) => {
+            SQLStatement += hashResults.join('');
+            let pos = SQLStatement.lastIndexOf(',\n\t');
+            SQLStatement = SQLStatement.substring(0, pos) + ';';
+
+            try {
+              fs.writeFileSync(
+                'resources/database/test/sample_data/resample_users.sql',
+                SQLStatement,
+              );
+              console.log('Users sample file has been regenerated.');
+              return resolve();
+            } catch (write_err) {
+              console.error('Error writing users sample file: ', write_err);
+              return reject();
+            }
+          })
+          .catch((error) => {
+            console.error('Error generating hashes: ', error);
+            reject(error);
+          });
+      },
+    );
   });
 };
 
