@@ -7,7 +7,7 @@ import {
   getCategories,
   getVenues,
   setNewPrimary,
-  updateVenue
+  updateVenue,
 } from '../controllers/venue.controller';
 import { removeVenuePhoto } from '../models/venuePhoto.model';
 import user_authenticate from '../util/user_authenticate.middleware';

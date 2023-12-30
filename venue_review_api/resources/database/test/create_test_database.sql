@@ -31,7 +31,7 @@ CREATE TABLE User (
   given_name VARCHAR (128) NOT NULL, 
   family_name VARCHAR (128) NOT NULL, 
   password VARCHAR (256) NOT NULL COMMENT 'Only store the hash here, not actual password!', 
-  profile_photo_filename VARCHAR (128), 
+  profile_photo_filename VARCHAR (512), 
   PRIMARY KEY (user_id), 
   UNIQUE (username), 
   UNIQUE (email)

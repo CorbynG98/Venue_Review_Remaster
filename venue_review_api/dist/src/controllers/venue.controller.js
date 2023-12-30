@@ -98,7 +98,7 @@ const createVenue = async (req, res) => {
     // Only doing this so we can get the admin_id. Not verifying auth, that has already been done.
     // Because we have already checked, we shouldn't have to try catch this code either.
     // We know it's valid at this point, and can trust the process.
-    let token = req.header('Authorization')?.toString() ?? "";
+    let token = req.header('Authorization')?.toString() ?? '';
     let hashedToken = crypto_1.default.createHash('sha512').update(token).digest('hex');
     let user_id = await (0, sessions_model_1.getByToken)(hashedToken);
     let values = [

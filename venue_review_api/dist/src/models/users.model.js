@@ -51,7 +51,7 @@ const getPhoto = (user_id) => {
         (0, db_1.getPool)().query('SELECT profile_photo_filename FROM User WHERE user_id = ?', user_id, (err, result) => {
             if (err)
                 return reject(err);
-            resolve(result);
+            resolve(result[0].profile_photo_filename);
         });
     });
 };

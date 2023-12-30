@@ -83,13 +83,13 @@ const getPhoto = (user_id: string): Promise<string> => {
       user_id,
       (err: QueryError | null, result: any) => {
         if (err) return reject(err);
-        resolve(result);
+        resolve(result[0].profile_photo_filename);
       },
     );
   });
 };
 
-const uploadPhoto = (values: string[][]): Promise<void> => {
+const uploadPhoto = (values: (string | null)[]): Promise<void> => {
   return new Promise((resolve, reject) => {
     getPool().query(
       'UPDATE User SET profile_photo_filename = ? WHERE user_id = ?',
@@ -122,5 +122,6 @@ export {
   getUserByUsername,
   removePhoto,
   updateUser,
-  uploadPhoto,
+  uploadPhoto
 };
+

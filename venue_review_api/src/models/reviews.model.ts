@@ -2,7 +2,7 @@ import { QueryError } from 'mysql2';
 import { getPool } from '../config/db';
 
 export default interface VenueReviewsResource {
-  review_author: ReviewerAuthorResource
+  review_author: ReviewerAuthorResource;
   review_body: string;
   star_rating: number;
   cost_rating: string;
@@ -89,4 +89,3 @@ const getUserReviews = (values: string[]): Promise<string> => {
 };
 
 export { checkReviewer, createReview, getUserReviews, getVenueReviews };
-

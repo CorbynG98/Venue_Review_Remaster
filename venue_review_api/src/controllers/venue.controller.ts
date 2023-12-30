@@ -81,12 +81,12 @@ const getVenues = async (req: Request, res: Response) => {
 
   let maxCostRating =
     req.query.maxCostRating != null &&
-      req.query.maxCostRating.toString().length > 0
+    req.query.maxCostRating.toString().length > 0
       ? Number(req.query.maxCostRating?.toString())
       : null;
   let minStarRating =
     req.query.minStarRating != null &&
-      req.query.minStarRating.toString().length > 0
+    req.query.minStarRating.toString().length > 0
       ? Number(req.query.minStarRating?.toString())
       : null;
 
@@ -125,7 +125,7 @@ const createVenue = async (req: Request, res: Response) => {
   // Only doing this so we can get the admin_id. Not verifying auth, that has already been done.
   // Because we have already checked, we shouldn't have to try catch this code either.
   // We know it's valid at this point, and can trust the process.
-  let token = req.header('Authorization')?.toString() ?? "";
+  let token = req.header('Authorization')?.toString() ?? '';
   let hashedToken = crypto.createHash('sha512').update(token).digest('hex');
   let user_id = await get_session_by_token(hashedToken);
 
@@ -219,6 +219,5 @@ export {
   getVenues,
   removePhoto,
   setNewPrimary,
-  updateVenue
+  updateVenue,
 };
-

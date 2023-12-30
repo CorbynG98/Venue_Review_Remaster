@@ -17,8 +17,7 @@ const user_routes = (app) => {
         .route('/users/:id')
         .patch([...validateUserData, user_authenticate_middleware_1.default], user_controller_1.updateUser);
     app
-        .route('/users/:id/photo')
-        .get(user_authenticate_middleware_1.default, user_controller_1.getPhoto)
+        .route('/users/photo')
         .put(user_authenticate_middleware_1.default, user_controller_1.uploadPhoto)
         .delete(user_authenticate_middleware_1.default, user_controller_1.removePhoto);
 };

@@ -1,10 +1,9 @@
 import { Express } from 'express';
 import { check } from 'express-validator';
 import {
-  getPhoto,
   removePhoto,
   updateUser,
-  uploadPhoto,
+  uploadPhoto
 } from '../controllers/user.controller';
 import authenticate from '../util/user_authenticate.middleware';
 
@@ -21,8 +20,7 @@ const user_routes = (app: Express) => {
     .patch([...validateUserData, authenticate], updateUser);
 
   app
-    .route('/users/:id/photo')
-    .get(authenticate, getPhoto)
+    .route('/users/photo')
     .put(authenticate, uploadPhoto)
     .delete(authenticate, removePhoto);
 };
