@@ -145,13 +145,27 @@ const createVenue = async (req, res) => {
     req.body.category_id,
     req.body.city,
     req.body.short_description,
-    req.body.long_description,
+    req.body.long_description ?? '',
     req.body.address,
     req.body.latitude,
     req.body.longitude,
     user_id,
     new Date(),
   ];
+  try {
+    let result = await (0, venueCategory_model_1.doesCategoryExist)(
+      req.body.category_id,
+    );
+    if (!result) {
+      return res
+        .status(400)
+        .json({ status: 400, message: 'Category does not exist.' });
+    }
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ status: 400, message: 'Provided category is not valid.' });
+  }
   (0, venues_model_1.createVenue)(values)
     .then(() => {
       res.status(201).json({ status: 201, message: values[0] });
@@ -240,7 +254,7 @@ const createVenuePhoto = async (req, res) => {
       let values = [
         venue_id,
         result,
-        req.body.description,
+        req.body.description ?? '',
         req.body.is_primary == 'true',
       ];
       (0, venuePhoto_model_1.createVenuePhoto)(values)
@@ -268,28 +282,34 @@ const createVenuePhoto = async (req, res) => {
 };
 exports.createVenuePhoto = createVenuePhoto;
 const removePhoto = async (req, res) => {
+  console.log('Removing photo 1');
   let venue_id = req.params.id;
   let filename = req.params.photoFilename;
   let values = [venue_id, filename];
-  (0, google_cloud_storage_helper_1.removeFile)(
-    filename,
-    venuePhotoBucket,
-  ).then(() => {
-    (0, venuePhoto_model_1.removeVenuePhoto)(values)
-      .then((result) => {
-        if (result == null) {
-          return res
-            .status(404)
-            .json({ status: 404, message: 'No photo to remove.' });
-        }
-        (0, venuePhoto_model_1.randomNewPrimary)(venue_id).then(() => {
-          res.status(200).json({ status: 204, message: 'No Content.' });
+  console.log('Removing photo 2');
+  (0, google_cloud_storage_helper_1.removeFile)(filename, venuePhotoBucket)
+    .then(() => {
+      console.log('Removing photo 3');
+      (0, venuePhoto_model_1.removeVenuePhoto)(values)
+        .then((result) => {
+          console.log('Removing photo 4');
+          if (result == null) {
+            return res
+              .status(404)
+              .json({ status: 404, message: 'No photo to remove.' });
+          }
+          (0, venuePhoto_model_1.randomNewPrimary)(venue_id).then(() => {
+            console.log('Removing photo 5');
+            res.status(200).json({ status: 204, message: 'No Content.' });
+          });
+        })
+        .catch((err) => {
+          res.status(500).json({ status: 500, message: err?.code ?? err });
         });
-      })
-      .catch((err) => {
-        res.status(500).json({ status: 500, message: err?.code ?? err });
-      });
-  });
+    })
+    .catch((err) => {
+      res.status(500).json({ status: 500, message: err?.code ?? err });
+    });
 };
 exports.removePhoto = removePhoto;
 const setNewPrimary = async (req, res) => {
@@ -297,8 +317,13 @@ const setNewPrimary = async (req, res) => {
   let filename = req.params.photoFilename;
   let values = [venue_id, filename];
   (0, venuePhoto_model_1.setPrimaryPhoto)(values)
-    .then(() => {
-      (0, venuePhoto_model_1.randomNewPrimary)(venue_id).then(() => {
+    .then((result) => {
+      if (!result) {
+        return res
+          .status(404)
+          .json({ status: 404, message: 'No photo to set as primary.' });
+      }
+      (0, venuePhoto_model_1.ensureOnlyOnePrimary)(values).then(() => {
         res.status(200).json({ status: 200, message: 'OK' });
       });
     })

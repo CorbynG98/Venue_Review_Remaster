@@ -6,10 +6,10 @@ import {
   getById,
   getCategories,
   getVenues,
+  removePhoto,
   setNewPrimary,
   updateVenue,
 } from '../controllers/venue.controller';
-import { removeVenuePhoto } from '../models/venuePhoto.model';
 import user_authenticate from '../util/user_authenticate.middleware';
 import venue_authenticate from '../util/venue_authenticate.middleware';
 
@@ -139,7 +139,7 @@ const user_routes = (app: Express) => {
 
   app
     .route('/venues/:id/photos/:photoFilename')
-    .delete(venue_authenticate, removeVenuePhoto);
+    .delete(venue_authenticate, removePhoto);
 
   app
     .route('/venues/:id/photos/:photoFilename/setPrimary')

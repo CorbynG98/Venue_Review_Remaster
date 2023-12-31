@@ -36,11 +36,20 @@ exports.ensureOnlyOnePrimary = ensureOnlyOnePrimary;
 const setPrimaryPhoto = (values) => {
   return new Promise((resolve, reject) => {
     (0, db_1.getPool)().query(
-      'UPDATE VenuePhoto SET is_primary = 1 WHERE venue_id = ? AND photo_filename = ?',
+      'SELECT venue_id FROM VenuePhoto WHERE venue_id = ? AND photo_filename = ?',
       values,
-      (err) => {
+      (err, rows) => {
         if (err) return reject(err);
-        resolve();
+        if (rows == '' || rows == null || rows.length == 0)
+          return resolve(false);
+        (0, db_1.getPool)().query(
+          'UPDATE VenuePhoto SET is_primary = 1 WHERE venue_id = ? AND photo_filename = ?',
+          values,
+          (err) => {
+            if (err) return reject(err);
+            resolve(true);
+          },
+        );
       },
     );
   });
@@ -53,7 +62,7 @@ const randomNewPrimary = (venue_id) => {
       venue_id,
       (err, rows) => {
         if (err) return reject(err);
-        if (rows == '' || rows == null || rows.length == 0) resolve();
+        if (rows == '' || rows == null || rows.length == 0) return resolve();
         (0, db_1.getPool)().query(
           'UPDATE VenuePhoto SET is_primary = 1 WHERE venue_id = ? AND photo_filename = ?',
           [[rows[0].venue_id], [rows[0].photo_filename]],
@@ -74,7 +83,8 @@ const removeVenuePhoto = (values) => {
       values,
       (err, rows) => {
         if (err) return reject(err);
-        if (rows == '' || rows == null || rows.length == 0) resolve(null);
+        if (rows == '' || rows == null || rows.length == 0)
+          return resolve(null);
         (0, db_1.getPool)().query(
           'DELETE FROM VenuePhoto WHERE venue_id = ? AND photo_filename = ?',
           values,

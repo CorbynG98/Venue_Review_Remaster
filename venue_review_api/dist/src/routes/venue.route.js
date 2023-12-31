@@ -7,7 +7,6 @@ var __importDefault =
 Object.defineProperty(exports, '__esModule', { value: true });
 const express_validator_1 = require('express-validator');
 const venue_controller_1 = require('../controllers/venue.controller');
-const venuePhoto_model_1 = require('../models/venuePhoto.model');
 const user_authenticate_middleware_1 = __importDefault(
   require('../util/user_authenticate.middleware'),
 );
@@ -154,7 +153,7 @@ const user_routes = (app) => {
     .route('/venues/:id/photos/:photoFilename')
     .delete(
       venue_authenticate_middleware_1.default,
-      venuePhoto_model_1.removeVenuePhoto,
+      venue_controller_1.removePhoto,
     );
   app
     .route('/venues/:id/photos/:photoFilename/setPrimary')

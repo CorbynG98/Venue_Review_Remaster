@@ -275,7 +275,7 @@ const createVenuePhoto = async (req: Request, res: Response) => {
       let values = [
         venue_id,
         result,
-        req.body.description,
+        req.body.description ?? '',
         req.body.is_primary == 'true',
       ];
       upload_venue_photo(values)
@@ -304,23 +304,26 @@ const removePhoto = async (req: Request, res: Response) => {
   let filename = req.params.photoFilename;
 
   let values = [venue_id, filename];
-
-  remove_file(filename, venuePhotoBucket).then(() => {
-    remove_venue_photo(values)
-      .then((result) => {
-        if (result == null) {
-          return res
-            .status(404)
-            .json({ status: 404, message: 'No photo to remove.' });
-        }
-        make_random_primary(venue_id).then(() => {
-          res.status(200).json({ status: 204, message: 'No Content.' });
+  remove_file(filename, venuePhotoBucket)
+    .then(() => {
+      remove_venue_photo(values)
+        .then((result) => {
+          if (result == null) {
+            return res
+              .status(404)
+              .json({ status: 404, message: 'No photo to remove.' });
+          }
+          make_random_primary(venue_id).then(() => {
+            res.status(204).json({ status: 204, message: 'No Content.' });
+          });
+        })
+        .catch((err) => {
+          res.status(500).json({ status: 500, message: err?.code ?? err });
         });
-      })
-      .catch((err) => {
-        res.status(500).json({ status: 500, message: err?.code ?? err });
-      });
-  });
+    })
+    .catch((err) => {
+      res.status(500).json({ status: 500, message: err?.code ?? err });
+    });
 };
 
 const setNewPrimary = async (req: Request, res: Response) => {
@@ -330,8 +333,13 @@ const setNewPrimary = async (req: Request, res: Response) => {
   let values = [venue_id, filename];
 
   make_new_primary(values)
-    .then(() => {
-      make_random_primary(venue_id).then(() => {
+    .then((result) => {
+      if (!result) {
+        return res
+          .status(404)
+          .json({ status: 404, message: 'No photo to set as primary.' });
+      }
+      ensure_one_primary(values).then(() => {
         res.status(200).json({ status: 200, message: 'OK' });
       });
     })

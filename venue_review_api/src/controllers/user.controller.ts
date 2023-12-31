@@ -81,13 +81,11 @@ const removePhoto = async (req: Request, res: Response) => {
             res.status(204).json({ status: 204, message: 'No Content.' });
           })
           .catch((err) => {
-            console.log(err);
             res.status(500).json({ status: 500, message: err?.code ?? err });
           });
       });
     })
     .catch((err) => {
-      console.log(err);
       res.status(500).json({ status: 500, message: err?.code ?? err });
     });
 };
