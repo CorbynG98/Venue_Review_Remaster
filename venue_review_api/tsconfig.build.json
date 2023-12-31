@@ -15,5 +15,5 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["jest", "node"]
   },
-  "exclude": ["./dist"]
+  "exclude": ["__test__", "./dist"]
 }

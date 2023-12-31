@@ -5,7 +5,10 @@ import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { getByToken as get_session_by_token } from '../models/sessions.model';
-import { getCategories as get_categories } from '../models/venueCategory.model';
+import {
+  doesCategoryExist as does_category_exist,
+  getCategories as get_categories,
+} from '../models/venueCategory.model';
 import {
   ensureOnlyOnePrimary as ensure_one_primary,
   setPrimaryPhoto as make_new_primary,
@@ -163,13 +166,26 @@ const createVenue = async (req: Request, res: Response) => {
     req.body.category_id,
     req.body.city,
     req.body.short_description,
-    req.body.long_description,
+    req.body.long_description ?? '',
     req.body.address,
     req.body.latitude,
     req.body.longitude,
     user_id,
     new Date(),
   ];
+
+  try {
+    let result = await does_category_exist(req.body.category_id);
+    if (!result) {
+      return res
+        .status(400)
+        .json({ status: 400, message: 'Category does not exist.' });
+    }
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ status: 400, message: 'Provided category is not valid.' });
+  }
 
   create_venue(values)
     .then(() => {
@@ -183,6 +199,11 @@ const createVenue = async (req: Request, res: Response) => {
 const getById = async (req: Request, res: Response) => {
   get_venue_by_id(req.params.id)
     .then((result) => {
+      if (result == null) {
+        return res
+          .status(404)
+          .json({ status: 404, message: 'No venue found.' });
+      }
       res.status(200).json(result);
     })
     .catch((err) => {

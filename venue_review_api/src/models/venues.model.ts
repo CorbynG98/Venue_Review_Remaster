@@ -93,7 +93,7 @@ const createVenue = (values: string[]): Promise<void> => {
   });
 };
 
-const getVenueById = (values: string): Promise<VenueResource> => {
+const getVenueById = (values: string): Promise<VenueResource | null> => {
   return new Promise((resolve, reject) => {
     getPool().query(
       `
@@ -121,6 +121,7 @@ const getVenueById = (values: string): Promise<VenueResource> => {
       values,
       (err: QueryError | null, result: any) => {
         if (err) return reject(err);
+        if (result.length == 0) return resolve(null);
         // Do some processing on the photos object, to format it nicely
         result[0].photos = result[0].photos.split('[]').map((photo: string) => {
           const [photo_filename, photo_description, is_primary] =
@@ -162,4 +163,3 @@ const updateVenue = (values: string[]): Promise<void> => {
 };
 
 export { createVenue, getVenueById, getVenues, updateVenue };
-
