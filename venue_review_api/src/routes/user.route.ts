@@ -3,7 +3,7 @@ import { check } from 'express-validator';
 import {
   removePhoto,
   updateUser,
-  uploadPhoto
+  uploadPhoto,
 } from '../controllers/user.controller';
 import authenticate from '../util/user_authenticate.middleware';
 

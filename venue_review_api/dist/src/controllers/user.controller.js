@@ -3,45 +3,40 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadPhoto = exports.updateUser = exports.removePhoto = exports.getPhoto = void 0;
+exports.uploadPhoto = exports.updateUser = exports.removePhoto = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const sessions_model_1 = require("../models/sessions.model");
 const users_model_1 = require("../models/users.model");
 const google_cloud_storage_helper_1 = require("../util/google_cloud_storage.helper");
+const userDPBucket = 'venue-review-user-dp';
 const updateUser = async (req, res) => {
     throw new Error('Not implemented');
 };
 exports.updateUser = updateUser;
-const getPhoto = async (req, res) => {
-    throw new Error('Not implemented');
-};
-exports.getPhoto = getPhoto;
 const uploadPhoto = async (req, res) => {
     let token = req.header('Authorization')?.toString() ?? '';
     let hashedToken = crypto_1.default.createHash('sha512').update(token).digest('hex');
     let user_id = await (0, sessions_model_1.getByToken)(hashedToken);
     let image = req.body;
     let imageExt = (req.header('content-type')?.split('/')[1] ?? 'png').toLowerCase();
-    let bucket = 'venue-review-user-dp';
     let fileName = `${user_id}.${imageExt}`;
-    let imageDIR = './venue-review-user-dp';
+    let imageDIR = `./${userDPBucket}`;
     if (!fs_1.default.existsSync(imageDIR)) {
         fs_1.default.mkdirSync(imageDIR);
     }
     try {
         fs_1.default.writeFileSync(`${imageDIR}/${fileName}`, image);
         let filePath = path_1.default.resolve(`${imageDIR}/${fileName}`);
-        (0, google_cloud_storage_helper_1.uploadFile)(filePath, bucket).then((result) => {
+        (0, google_cloud_storage_helper_1.uploadFile)(filePath, userDPBucket).then((result) => {
             fs_1.default.rmdirSync(imageDIR, { recursive: true }); // Delete the local file now that storage upload succeeded
-            let values = [
-                result[0].metadata.selfLink ?? null,
-                user_id
-            ];
-            (0, users_model_1.uploadPhoto)(values).then(() => {
-                res.status(201).json({ status: 201, message: result[0].metadata.selfLink ?? null, });
-            }).catch((err) => {
+            let values = [result, user_id];
+            (0, users_model_1.uploadPhoto)(values)
+                .then(() => {
+                res.status(201).json({ status: 201, message: result });
+            })
+                .catch((err) => {
                 res.status(500).json({ status: 500, message: err?.code ?? err });
             });
         });
@@ -57,25 +52,30 @@ const removePhoto = async (req, res) => {
     let hashedToken = crypto_1.default.createHash('sha512').update(token).digest('hex');
     let user_id = await (0, sessions_model_1.getByToken)(hashedToken);
     // Get the users current dp from database
-    (0, users_model_1.getPhoto)(user_id).then((result) => {
+    (0, users_model_1.getPhoto)(user_id)
+        .then((result) => {
         // If the user doesn't have a dp, we don't need to do anything.
         if (result == null) {
-            return res.status(200).json({ status: 200, message: 'No profile photo to remove.' });
+            return res
+                .status(200)
+                .json({ status: 200, message: 'No profile photo to remove.' });
         }
         // Get extension from the current DP.
         let resultSplit = result.split('/');
         let fileName = resultSplit[resultSplit.length - 1]?.toLowerCase();
         // If the user does have a dp, we need to remove it from storage and update the database.
-        let bucket = 'venue-review-user-dp';
-        (0, google_cloud_storage_helper_1.removeFile)(fileName, bucket).then(() => {
-            (0, users_model_1.removePhoto)(user_id).then(() => {
+        (0, google_cloud_storage_helper_1.removeFile)(fileName, userDPBucket).then(() => {
+            (0, users_model_1.removePhoto)(user_id)
+                .then(() => {
                 res.status(204).json({ status: 204, message: 'No Content.' });
-            }).catch((err) => {
+            })
+                .catch((err) => {
                 console.log(err);
                 res.status(500).json({ status: 500, message: err?.code ?? err });
             });
         });
-    }).catch((err) => {
+    })
+        .catch((err) => {
         console.log(err);
         res.status(500).json({ status: 500, message: err?.code ?? err });
     });

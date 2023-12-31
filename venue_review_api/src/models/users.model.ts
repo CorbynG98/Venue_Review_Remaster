@@ -122,6 +122,5 @@ export {
   getUserByUsername,
   removePhoto,
   updateUser,
-  uploadPhoto
+  uploadPhoto,
 };
-

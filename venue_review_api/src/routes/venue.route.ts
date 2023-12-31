@@ -89,6 +89,15 @@ const validateQueryParams = [
     .withMessage('isDesc must be a boolean (true or false).'),
 ];
 
+const validatePhotoPrimaryField = [
+  check('is_primary').custom((value) => {
+    if (!value || value.trim() === '') {
+      return false;
+    }
+    return value === 'true' || value === 'false';
+  }).withMessage('is_primary is required and must be a boolean (true or false).')
+]
+
 const user_routes = (app: Express) => {
   app
     .route('/venues')
@@ -102,15 +111,15 @@ const user_routes = (app: Express) => {
 
   app.route('/categories').get(getCategories);
 
-  app.route('/venues/:id/photos').post(venue_authenticate, createVenuePhoto);
+  app.route('/venues/:id/photos').post([...validatePhotoPrimaryField, venue_authenticate], createVenuePhoto);
 
   app
     .route('/venues/:id/photos/:photoFilename')
-    .delete(user_authenticate, removeVenuePhoto);
+    .delete(venue_authenticate, removeVenuePhoto);
 
   app
     .route('/venues/:id/photos/:photoFilename/setPrimary')
-    .post(venue_authenticate, setNewPrimary);
+    .post([...validatePhotoPrimaryField, venue_authenticate], setNewPrimary);
 };
 
 export default user_routes;

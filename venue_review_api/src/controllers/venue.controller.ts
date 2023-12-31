@@ -1,15 +1,28 @@
 import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
+import fs from 'fs';
+import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { getByToken as get_session_by_token } from '../models/sessions.model';
 import { getCategories as get_categories } from '../models/venueCategory.model';
+import {
+  ensureOnlyOnePrimary as ensure_one_primary,
+  setPrimaryPhoto as make_new_primary,
+  randomNewPrimary as make_random_primary,
+  removeVenuePhoto as remove_venue_photo,
+  createVenuePhoto as upload_venue_photo,
+} from '../models/venuePhoto.model';
 import {
   createVenue as create_venue,
   getVenueById as get_venue_by_id,
   getVenues as get_venues,
   updateVenue as update_venue,
 } from '../models/venues.model';
+import {
+  removeFile as remove_file,
+  uploadFile as upload_file,
+} from '../util/google_cloud_storage.helper';
 
 interface Params {
   category_id: string | null;
@@ -17,6 +30,8 @@ interface Params {
   city: string | null;
   venue_name: string | null;
 }
+
+const venuePhotoBucket = 'venue-review-venue-image';
 
 function generateConditionsAndValues(params: Params) {
   const conditions = [];
@@ -81,12 +96,12 @@ const getVenues = async (req: Request, res: Response) => {
 
   let maxCostRating =
     req.query.maxCostRating != null &&
-    req.query.maxCostRating.toString().length > 0
+      req.query.maxCostRating.toString().length > 0
       ? Number(req.query.maxCostRating?.toString())
       : null;
   let minStarRating =
     req.query.minStarRating != null &&
-    req.query.minStarRating.toString().length > 0
+      req.query.minStarRating.toString().length > 0
       ? Number(req.query.minStarRating?.toString())
       : null;
 
@@ -200,15 +215,95 @@ const getCategories = async (req: Request, res: Response) => {
 };
 
 const createVenuePhoto = async (req: Request, res: Response) => {
-  throw new Error('Not implemented');
+  const validation = validationResult(req);
+  if (!validation.isEmpty()) {
+    return res.status(400).json({ errors: validation.array() });
+  }
+  let venue_id = req.params.id;
+
+  if (req.file == null)
+    return res.status(400).json({ status: 400, message: 'No file provided.' });
+
+  let image = req.file.buffer;
+  let imageExt = req.file.mimetype.split("/")[1];
+  let fileName = `${venue_id}-${uuidv4().replace(/-/g, '')}.${imageExt}`;
+
+  let imageDIR = `./${venuePhotoBucket}`;
+  if (!fs.existsSync(imageDIR)) {
+    fs.mkdirSync(imageDIR);
+  }
+
+  try {
+    fs.writeFileSync(`${imageDIR}/${fileName}`, image);
+    let filePath = path.resolve(`${imageDIR}/${fileName}`);
+    upload_file(filePath, venuePhotoBucket).then((result) => {
+      fs.rmSync(imageDIR, { recursive: true }); // Delete the local file now that storage upload succeeded
+      let values = [
+        venue_id,
+        result,
+        req.body.description,
+        req.body.is_primary == 'true',
+      ];
+      upload_venue_photo(values)
+        .then(() => {
+          if (req.body.is_primary as boolean) {
+            // Make sure others are not primary
+            ensure_one_primary([venue_id, result]).then(() => {
+              res.status(201).json({ status: 201, message: result });
+            });
+          } else {
+            res.status(201).json({ status: 201, message: result });
+          }
+        })
+        .catch((err) => {
+          res.status(500).json({ status: 500, message: err?.code ?? err });
+        });
+    });
+  } catch (err) {
+    fs.rmdirSync(imageDIR, { recursive: true }); // Delete the local file, we had a failure, and don't want these to hang around.
+    res.status(500).json({ status: 500, message: err });
+  }
 };
 
 const removePhoto = async (req: Request, res: Response) => {
-  throw new Error('Not implemented');
+  let venue_id = req.params.id;
+  let filename = req.params.photoFilename;
+
+  let values = [venue_id, filename];
+
+  remove_file(filename, venuePhotoBucket).then(() => {
+    remove_venue_photo(values)
+      .then((result) => {
+        if (result == null) {
+          return res
+            .status(404)
+            .json({ status: 404, message: 'No photo to remove.' });
+        }
+        make_random_primary(venue_id).then(() => {
+          res.status(200).json({ status: 204, message: 'No Content.' });
+        });
+      })
+      .catch((err) => {
+        res.status(500).json({ status: 500, message: err?.code ?? err });
+      });
+  });
 };
 
 const setNewPrimary = async (req: Request, res: Response) => {
-  throw new Error('Not implemented');
+  let venue_id = req.params.id;
+  let filename = req.params.photoFilename;
+
+  let values = [venue_id, filename];
+
+  make_new_primary(values)
+    .then(() => {
+      make_random_primary(venue_id).then(() => {
+        res.status(200).json({ status: 200, message: 'OK' });
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({ status: 500, message: err?.code ?? err });
+    });
 };
 
 export {
@@ -219,5 +314,6 @@ export {
   getVenues,
   removePhoto,
   setNewPrimary,
-  updateVenue,
+  updateVenue
 };
+

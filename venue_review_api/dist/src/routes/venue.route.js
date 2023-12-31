@@ -76,6 +76,14 @@ const validateQueryParams = [
         .isBoolean()
         .withMessage('isDesc must be a boolean (true or false).'),
 ];
+const validatePhotoPrimaryField = [
+    (0, express_validator_1.check)('is_primary').custom((value) => {
+        if (!value || value.trim() === '') {
+            return false;
+        }
+        return value === 'true' || value === 'false';
+    }).withMessage('is_primary is required and must be a boolean (true or false).')
+];
 const user_routes = (app) => {
     app
         .route('/venues')
@@ -86,12 +94,12 @@ const user_routes = (app) => {
         .get(venue_controller_1.getById)
         .patch([...validateVenueData, venue_authenticate_middleware_1.default], venue_controller_1.updateVenue);
     app.route('/categories').get(venue_controller_1.getCategories);
-    app.route('/venues/:id/photos').post(venue_authenticate_middleware_1.default, venue_controller_1.createVenuePhoto);
+    app.route('/venues/:id/photos').post([...validatePhotoPrimaryField, venue_authenticate_middleware_1.default], venue_controller_1.createVenuePhoto);
     app
         .route('/venues/:id/photos/:photoFilename')
-        .delete(user_authenticate_middleware_1.default, venuePhoto_model_1.removeVenuePhoto);
+        .delete(venue_authenticate_middleware_1.default, venuePhoto_model_1.removeVenuePhoto);
     app
         .route('/venues/:id/photos/:photoFilename/setPrimary')
-        .post(venue_authenticate_middleware_1.default, venue_controller_1.setNewPrimary);
+        .post([...validatePhotoPrimaryField, venue_authenticate_middleware_1.default], venue_controller_1.setNewPrimary);
 };
 exports.default = user_routes;

@@ -38,12 +38,10 @@ const createReview = async (req: Request, res: Response) => {
   try {
     let review_check = await check_reviewer(user_id, req.params.id);
     if (!review_check) {
-      res
-        .status(403)
-        .json({
-          status: 403,
-          message: 'You cannot write a review for this venue.',
-        });
+      res.status(403).json({
+        status: 403,
+        message: 'You cannot write a review for this venue.',
+      });
       return;
     }
   } catch (err) {

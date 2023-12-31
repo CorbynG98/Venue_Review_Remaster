@@ -73,7 +73,7 @@ CREATE TABLE Venue (
 
 CREATE TABLE VenuePhoto (
   venue_id VARCHAR(128) NOT NULL, 
-  photo_filename VARCHAR(128) NOT NULL, 
+  photo_filename VARCHAR(512) NOT NULL, 
   photo_description VARCHAR(128), 
   is_primary BOOLEAN NOT NULL DEFAULT false, 
   PRIMARY KEY (venue_id, photo_filename), 

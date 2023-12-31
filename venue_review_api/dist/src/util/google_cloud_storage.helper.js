@@ -12,23 +12,38 @@ const storage = new storage_1.Storage({
     projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
     keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 });
+const isTest = process.env.NODE_ENV == 'test';
 const uploadFile = async (filePath, bucketName) => {
-    // First try create the bucket
-    try {
-        await storage.createBucket(bucketName);
-    }
-    catch (err) {
-        // If the bucket already exists, that's fine
-        if (err.code !== 409) {
-            throw err;
+    return new Promise(async (resolve, reject) => {
+        if (isTest) {
+            var filePathSplit = filePath.split(`\\${bucketName}\\`);
+            return resolve(filePathSplit[1]); // On test mode, don't actually call google. Just mimic a success
         }
-    }
-    // upload file to bucket with public access
-    return storage.bucket(bucketName).upload(filePath);
+        try {
+            await storage.createBucket(bucketName);
+        }
+        catch (err) {
+            // If the bucket already exists, that's fine
+            if (err.code !== 409) {
+                reject(err);
+            }
+        }
+        storage
+            .bucket(bucketName)
+            .upload(filePath)
+            .then((result) => {
+            resolve(result[0].metadata.selfLink ?? null);
+        })
+            .catch((err) => {
+            reject(err);
+        });
+    });
 };
 exports.uploadFile = uploadFile;
 const removeFile = async (filePath, bucketName) => {
     return new Promise((resolve, reject) => {
+        if (isTest)
+            return resolve(); // On test mode, don't actually call google. Just mimic a success
         if (!storage.bucket(bucketName).exists())
             return resolve();
         if (!storage.bucket(bucketName).file(filePath).exists())

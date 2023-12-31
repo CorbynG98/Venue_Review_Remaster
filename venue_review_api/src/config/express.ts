@@ -38,8 +38,16 @@ const initApp = () => {
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.raw({ type: 'image/png' }));
   app.use(bodyParser.raw({ type: 'image/jpeg' }));
-  // multipart/form-data requests
-  app.use(upload.single('photo'));
+  // Add multer middleware
+  app.use((req, res, next) => {
+    upload.single('photo')(req, res, (err) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+      } else {
+        next();
+      }
+    });
+  });
   // Add CORS middleware
   app.use(cors());
 
