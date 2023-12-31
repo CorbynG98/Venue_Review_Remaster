@@ -41,6 +41,7 @@ interface VenuePhotoResource {
 const getVenues = (
   values: (string | Number)[],
   where_conditions: string[],
+  order_condition: string,
 ): Promise<VenueSummaryResource[]> => {
   // values = [lat, lat, long, where_conditions, cost, cost, star, star, order, limit, offset]
   return new Promise((resolve, reject) => {
@@ -54,8 +55,8 @@ const getVenues = (
         v.short_description,
         v.latitude,
         v.longitude,
-        AVG(star_rating) as avg_star_rating,
-        AVG(mode_cost_rating) as avg_cost_rating,
+        IFNULL(AVG(star_rating), 0) as avg_star_rating,
+        IFNULL(AVG(mode_cost_rating), 5) as avg_cost_rating,
         (SELECT photo_filename FROM VenuePhoto WHERE venue_id = v.venue_id AND is_primary IS TRUE LIMIT 1) as primary_photo, 
         ACOS(SIN(PI()*?/180.0)*SIN(PI()*v.latitude/180.0)+COS(PI()*?/180.0)*COS(PI()*v.latitude/180.0)*COS(PI()*v.longitude/180.0-PI()*?/180.0))*6371 as distance
       FROM Venue v
@@ -67,7 +68,7 @@ const getVenues = (
       HAVING 
         (avg_cost_rating <= ? OR ? IS NULL)
         AND (avg_star_rating >= ? OR ? IS NULL)
-      ORDER BY ?
+      ${order_condition}
       LIMIT ?
       OFFSET ?`,
       values,
@@ -161,3 +162,4 @@ const updateVenue = (values: string[]): Promise<void> => {
 };
 
 export { createVenue, getVenueById, getVenues, updateVenue };
+

@@ -52,6 +52,17 @@ function generateConditionsAndValues(params: Params) {
   return { conditions, condition_values };
 }
 
+function generateOrderByCondition(sortBy: string, isDesc: boolean) {
+  switch (sortBy) {
+    case 'avg_star_rating':
+      return `ORDER BY avg_star_rating ${isDesc ? 'DESC' : 'ASC'}`;
+    case 'avg_cost_rating':
+      return `ORDER BY avg_cost_rating ${isDesc ? 'DESC' : 'ASC'}`;
+    default:
+      return `ORDER BY distance ${isDesc ? 'DESC' : 'ASC'}`;
+  }
+}
+
 const getVenues = async (req: Request, res: Response) => {
   const validation = validationResult(req);
   if (!validation.isEmpty()) {
@@ -115,14 +126,16 @@ const getVenues = async (req: Request, res: Response) => {
     maxCostRating,
     minStarRating, // Need 2 of these because of the HAVING clause
     minStarRating,
-    req.query.sortBy != null && req.query.isDesc != null
-      ? `${req.query.sortBy} ${req.query.isDesc ? 'DESC' : 'ASC'}`
-      : 'avg_star_rating DESC',
     Number(limit), // Result count
     Number(offset),
   ] as string[];
 
-  get_venues(values, conditions)
+  let orderByCondition = generateOrderByCondition(
+    req.query.sortBy?.toString() ?? 'distance',
+    req.query.isDesc == 'true',
+  );
+
+  get_venues(values, conditions, orderByCondition)
     .then((venues) => {
       res.status(200).json(venues);
     })
@@ -260,7 +273,7 @@ const createVenuePhoto = async (req: Request, res: Response) => {
         });
     });
   } catch (err) {
-    fs.rmdirSync(imageDIR, { recursive: true }); // Delete the local file, we had a failure, and don't want these to hang around.
+    fs.rmSync(imageDIR, { recursive: true }); // Delete the local file, we had a failure, and don't want these to hang around.
     res.status(500).json({ status: 500, message: err });
   }
 };

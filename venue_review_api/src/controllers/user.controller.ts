@@ -24,11 +24,11 @@ const uploadPhoto = async (req: Request, res: Response) => {
   let hashedToken = crypto.createHash('sha512').update(token).digest('hex');
   let user_id = await get_session_by_token(hashedToken);
 
-  let image = req.body;
-  let imageExt = (
-    req.header('content-type')?.split('/')[1] ?? 'png'
-  ).toLowerCase();
+  if (req.file == null)
+    return res.status(400).json({ status: 400, message: 'No file provided.' });
 
+  let image = req.file.buffer;
+  let imageExt = req.file.mimetype.split('/')[1];
   let fileName = `${user_id}.${imageExt}`;
 
   let imageDIR = `./${userDPBucket}`;
@@ -40,7 +40,7 @@ const uploadPhoto = async (req: Request, res: Response) => {
     fs.writeFileSync(`${imageDIR}/${fileName}`, image);
     let filePath = path.resolve(`${imageDIR}/${fileName}`);
     upload_file(filePath, userDPBucket).then((result) => {
-      fs.rmdirSync(imageDIR, { recursive: true }); // Delete the local file now that storage upload succeeded
+      fs.rmSync(imageDIR, { recursive: true }); // Delete the local file now that storage upload succeeded
       let values = [result, user_id];
       upload_user_dp(values)
         .then(() => {
@@ -51,7 +51,7 @@ const uploadPhoto = async (req: Request, res: Response) => {
         });
     });
   } catch (err) {
-    fs.rmdirSync(imageDIR, { recursive: true }); // Delete the local file, we had a failure, and don't want these to hang around.
+    fs.rmSync(imageDIR, { recursive: true }); // Delete the local file, we had a failure, and don't want these to hang around.
     res.status(500).json({ status: 500, message: err });
   }
 };

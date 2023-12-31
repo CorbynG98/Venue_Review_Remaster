@@ -32,25 +32,33 @@ const validateVenueData = [
 
 const validateQueryParams = [
   query('latitude')
-    .optional()
-    .exists()
-    .isFloat({ min: -90, max: 90 })
+    .custom((value) => {
+      if (!value || value.trim() === '') {
+        return true;
+      }
+      if (!isNaN(parseFloat(value))) {
+        let floatValue = parseFloat(value);
+        if (floatValue >= -90 && floatValue <= 90) {
+          return true;
+        }
+      }
+      return false;
+    })
     .withMessage('Latitude must be a number between -90 and 90.'),
   query('longitude')
-    .optional()
-    .exists()
-    .isFloat({ min: -180, max: 180 })
+    .custom((value) => {
+      if (!value || value.trim() === '') {
+        return true;
+      }
+      if (!isNaN(parseFloat(value))) {
+        let floatValue = parseFloat(value);
+        if (floatValue >= -180 && floatValue <= 180) {
+          return true;
+        }
+      }
+      return false;
+    })
     .withMessage('Longitude must be a number between -180 and 180.'),
-  query('limit')
-    .isInt({ min: 10 })
-    .withMessage(
-      'Page size must be provided and be greater than or equal to 10.',
-    ),
-  query('page')
-    .isInt({ min: 1 })
-    .withMessage(
-      'Page number must be provided and be greater than or equal to 1.',
-    ),
   query('minStarRating')
     .custom((value) => {
       if (!value || value.trim() === '') {
@@ -79,10 +87,20 @@ const validateQueryParams = [
       return false;
     })
     .withMessage('Maxcimum cost rating must be a number between 0 and 5.'),
-  query('sortBy')
-    .isIn(['star_rating', 'cost_rating', 'distance'])
+  query('limit')
+    .isInt({ min: 10 })
     .withMessage(
-      'Sort by must be one of star_rating, cost_rating, or distance.',
+      'Page size must be provided and be greater than or equal to 10.',
+    ),
+  query('page')
+    .isInt({ min: 1 })
+    .withMessage(
+      'Page number must be provided and be greater than or equal to 1.',
+    ),
+  query('sortBy')
+    .isIn(['avg_star_rating', 'avg_cost_rating', 'distance'])
+    .withMessage(
+      'Sort by must be one of avg_star_rating, avg_cost_rating, or distance.',
     ),
   query('isDesc')
     .isBoolean()
