@@ -89,6 +89,5 @@ export {
   ensureOnlyOnePrimary,
   randomNewPrimary,
   removeVenuePhoto,
-  setPrimaryPhoto
+  setPrimaryPhoto,
 };
-

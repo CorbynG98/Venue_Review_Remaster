@@ -96,12 +96,12 @@ const getVenues = async (req: Request, res: Response) => {
 
   let maxCostRating =
     req.query.maxCostRating != null &&
-      req.query.maxCostRating.toString().length > 0
+    req.query.maxCostRating.toString().length > 0
       ? Number(req.query.maxCostRating?.toString())
       : null;
   let minStarRating =
     req.query.minStarRating != null &&
-      req.query.minStarRating.toString().length > 0
+    req.query.minStarRating.toString().length > 0
       ? Number(req.query.minStarRating?.toString())
       : null;
 
@@ -225,7 +225,7 @@ const createVenuePhoto = async (req: Request, res: Response) => {
     return res.status(400).json({ status: 400, message: 'No file provided.' });
 
   let image = req.file.buffer;
-  let imageExt = req.file.mimetype.split("/")[1];
+  let imageExt = req.file.mimetype.split('/')[1];
   let fileName = `${venue_id}-${uuidv4().replace(/-/g, '')}.${imageExt}`;
 
   let imageDIR = `./${venuePhotoBucket}`;
@@ -314,6 +314,5 @@ export {
   getVenues,
   removePhoto,
   setNewPrimary,
-  updateVenue
+  updateVenue,
 };
-
