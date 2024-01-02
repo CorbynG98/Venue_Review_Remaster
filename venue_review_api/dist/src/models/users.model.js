@@ -3,12 +3,28 @@ Object.defineProperty(exports, '__esModule', { value: true });
 exports.uploadPhoto =
   exports.updateUser =
   exports.removePhoto =
+  exports.getUsernameEmailById =
   exports.getUserByUsername =
   exports.getUserByEmail =
   exports.getPhoto =
   exports.createUser =
     void 0;
 const db_1 = require('../config/db');
+const getUsernameEmailById = (user_id) => {
+  return new Promise((resolve, reject) => {
+    (0, db_1.getPool)().query(
+      'SELECT username, email FROM User WHERE user_id = ?',
+      user_id,
+      (err, result) => {
+        if (err) return reject(err);
+        if (result == '' || result == null || result.length == 0)
+          return resolve(null);
+        resolve(result[0]);
+      },
+    );
+  });
+};
+exports.getUsernameEmailById = getUsernameEmailById;
 const getUserByEmail = (email) => {
   return new Promise((resolve, reject) => {
     (0, db_1.getPool)().query(
@@ -54,10 +70,20 @@ const createUser = (values) => {
 exports.createUser = createUser;
 const updateUser = (values) => {
   return new Promise((resolve, reject) => {
-    (0, db_1.getPool)().query('UPDATE User SET ? VALUES ?', values, (err) => {
-      if (err) return reject(err);
-      resolve();
-    });
+    (0, db_1.getPool)().query(
+      `
+      UPDATE User SET
+        username = ?,
+        email = ?,
+        given_name = ?,
+        family_name = ?
+      WHERE user_id = ?`,
+      values,
+      (err) => {
+        if (err) return reject(err);
+        resolve();
+      },
+    );
   });
 };
 exports.updateUser = updateUser;

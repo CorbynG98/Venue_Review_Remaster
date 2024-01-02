@@ -25,7 +25,212 @@ const authenticateUser = async () => {
   sessionToken = response.body.token;
 };
 
-describe('Update User', () => {});
+describe('Update User', () => {
+  it('PATCH /users with valid session and data should succeed', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        username: 'bobby1',
+        email: 'bob.roberts@gmail.com',
+        given_name: 'Bobby',
+        family_name: 'Robbers',
+      })
+      .set('Authorization', `${sessionToken}`)
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  it('PATCH /users with valid session and empty username should fail', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        username: '',
+        email: 'bob.roberts@gmail.com',
+        given_name: 'Bobby',
+        family_name: 'Robbers',
+      })
+      .set('Authorization', `${sessionToken}`)
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  it('PATCH /users with valid session and no username should fail', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        email: 'bob.roberts@gmail.com',
+        given_name: 'Bobby',
+        family_name: 'Robbers',
+      })
+      .set('Authorization', `${sessionToken}`)
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  it('PATCH /users with valid session and invalid email should fail', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        username: 'bobby1',
+        email: 'bob.roberts.invalid.com',
+        given_name: 'Bobby',
+        family_name: 'Robbers',
+      })
+      .set('Authorization', `${sessionToken}`)
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  it('PATCH /users with valid session and empty email should fail', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        username: 'bobby1',
+        email: '',
+        given_name: 'Bobby',
+        family_name: 'Robbers',
+      })
+      .set('Authorization', `${sessionToken}`)
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  it('PATCH /users with valid session and no email should fail', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        username: 'bobby1',
+        given_name: 'Bobby',
+        family_name: 'Robbers',
+      })
+      .set('Authorization', `${sessionToken}`)
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  it('PATCH /users with valid session and empty given_name should fail', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        username: 'bobby1',
+        email: 'bob.roberts@gmail.com',
+        given_name: '',
+        family_name: 'Robbers',
+      })
+      .set('Authorization', `${sessionToken}`)
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  it('PATCH /users with valid session and no given_name should fail', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        username: 'bobby1',
+        email: 'bob.roberts@gmail.com',
+        family_name: 'Robbers',
+      })
+      .set('Authorization', `${sessionToken}`)
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  it('PATCH /users with valid session and empty family_name should fail', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        username: 'bobby1',
+        email: 'bob.roberts@gmail.com',
+        given_name: 'Bobby',
+        family_name: '',
+      })
+      .set('Authorization', `${sessionToken}`)
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  it('PATCH /users with valid session and no family_name should fail', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        username: 'bobby1',
+        email: 'bob.roberts@gmail.com',
+        given_name: 'Bobby',
+      })
+      .set('Authorization', `${sessionToken}`)
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  it('PATCH /users with valid session and username that already exists should fail', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        username: 'black.panther',
+        email: 'bob.roberts@gmail.com',
+        given_name: 'Bobby',
+        family_name: 'Robbers',
+      })
+      .set('Authorization', `${sessionToken}`)
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  it('PATCH /users with valid session and email that already exists should fail', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        username: 'black.panther',
+        email: 'superman@super.heroes',
+        given_name: 'Bobby',
+        family_name: 'Robbers',
+      })
+      .set('Authorization', `${sessionToken}`)
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  it('PATCH /venues with valid data and an invalid session should fail', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        username: 'bobby1',
+        email: 'bob.roberts@gmail.com',
+        given_name: 'Bobby',
+        family_name: 'Robbers',
+      })
+      .set('Authorization', `superInvalid`)
+      .expect('Content-Type', /json/)
+      .expect(403);
+  });
+
+  it('PATCH /venues with valid data and no session should fail', async () => {
+    // Plonk it into the request
+    await requestWithSupertest
+      .patch('/users')
+      .send({
+        username: 'bobby1',
+        email: 'bob.roberts@gmail.com',
+        given_name: 'Bobby',
+        family_name: 'Robbers',
+      })
+      .expect('Content-Type', /json/)
+      .expect(401);
+  });
+});
 
 describe('Upload Photo', () => {
   it('POST /users/photo with valid data should succeed', async () => {

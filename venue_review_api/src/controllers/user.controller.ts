@@ -1,11 +1,16 @@
 import crypto from 'crypto';
 import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
 import fs from 'fs';
 import path from 'path';
 import { getByToken as get_session_by_token } from '../models/sessions.model';
 import {
+  getUserByEmail as get_user_by_email,
+  getUsernameEmailById as get_user_by_id,
+  getUserByUsername as get_user_by_username,
   getPhoto as get_user_dp,
   removePhoto as remove_user_dp,
+  updateUser as update_user,
   uploadPhoto as upload_user_dp,
 } from '../models/users.model';
 import {
@@ -16,7 +21,59 @@ import {
 const userDPBucket = 'venue-review-user-dp';
 
 const updateUser = async (req: Request, res: Response) => {
-  throw new Error('Not implemented');
+  const validation = validationResult(req);
+  if (!validation.isEmpty()) {
+    return res.status(400).json({ errors: validation.array() });
+  }
+  let token = req.header('Authorization')?.toString() ?? '';
+  let hashedToken = crypto.createHash('sha512').update(token).digest('hex');
+  let user_id = await get_session_by_token(hashedToken);
+
+  let user = await get_user_by_id(user_id);
+  // Check email, if different to one currently used.
+  if (user != null && user.email != req.body.email) {
+    // Get user by email from database, to see if there is one already. Fail request if so.
+    let userByEmail = await get_user_by_email(req.body.email);
+    if (userByEmail != null) {
+      res.status(400).json({ status: 400, message: 'Email already in use.' });
+      return;
+    }
+  }
+  // Check username, if different to one currently used.
+  if (user != null && user.email != req.body.email) {
+    // Get user by email from database, to see if there is one already. Fail request if so.
+    let userByUsername = await get_user_by_username(req.body.username);
+    if (userByUsername != null) {
+      res
+        .status(400)
+        .json({ status: 400, message: 'Username already in use.' });
+      return;
+    }
+  }
+
+  let values = [
+    req.body.username,
+    req.body.email,
+    req.body.given_name,
+    req.body.family_name,
+    user_id,
+  ];
+  update_user(values)
+    .then(() => {
+      res.status(200).json({ status: 200, message: 'OK' });
+    })
+    .catch((err) => {
+      if (err.code == 'ER_DUP_ENTRY') {
+        res
+          .status(400)
+          .json({
+            status: 400,
+            message: 'Username or email is not valid, or already in use.',
+          });
+        return;
+      }
+      res.status(500).json({ status: 500, message: err?.code ?? err });
+    });
 };
 
 const uploadPhoto = async (req: Request, res: Response) => {

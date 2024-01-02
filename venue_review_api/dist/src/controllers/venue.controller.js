@@ -282,25 +282,20 @@ const createVenuePhoto = async (req, res) => {
 };
 exports.createVenuePhoto = createVenuePhoto;
 const removePhoto = async (req, res) => {
-  console.log('Removing photo 1');
   let venue_id = req.params.id;
   let filename = req.params.photoFilename;
   let values = [venue_id, filename];
-  console.log('Removing photo 2');
   (0, google_cloud_storage_helper_1.removeFile)(filename, venuePhotoBucket)
     .then(() => {
-      console.log('Removing photo 3');
       (0, venuePhoto_model_1.removeVenuePhoto)(values)
         .then((result) => {
-          console.log('Removing photo 4');
           if (result == null) {
             return res
               .status(404)
               .json({ status: 404, message: 'No photo to remove.' });
           }
           (0, venuePhoto_model_1.randomNewPrimary)(venue_id).then(() => {
-            console.log('Removing photo 5');
-            res.status(200).json({ status: 204, message: 'No Content.' });
+            res.status(204).json({ status: 204, message: 'No Content.' });
           });
         })
         .catch((err) => {

@@ -16,6 +16,23 @@ interface UserIdPasswordResource {
   password: string;
 }
 
+const getUsernameEmailById = (
+  user_id: string,
+): Promise<UserResource | null> => {
+  return new Promise((resolve, reject) => {
+    getPool().query(
+      'SELECT username, email FROM User WHERE user_id = ?',
+      user_id,
+      (err: QueryError | null, result: any) => {
+        if (err) return reject(err);
+        if (result == '' || result == null || result.length == 0)
+          return resolve(null);
+        resolve(result[0]);
+      },
+    );
+  });
+};
+
 const getUserByEmail = (
   email: string,
 ): Promise<UserIdPasswordResource | null> => {
@@ -66,7 +83,13 @@ const createUser = (values: string[]): Promise<void> => {
 const updateUser = (values: string[][]): Promise<void> => {
   return new Promise((resolve, reject) => {
     getPool().query(
-      'UPDATE User SET ? VALUES ?',
+      `
+      UPDATE User SET
+        username = ?,
+        email = ?,
+        given_name = ?,
+        family_name = ?
+      WHERE user_id = ?`,
       values,
       (err: QueryError | null) => {
         if (err) return reject(err);
@@ -120,6 +143,7 @@ export {
   getPhoto,
   getUserByEmail,
   getUserByUsername,
+  getUsernameEmailById,
   removePhoto,
   updateUser,
   uploadPhoto,

@@ -7,6 +7,7 @@ var __importDefault =
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.uploadPhoto = exports.updateUser = exports.removePhoto = void 0;
 const crypto_1 = __importDefault(require('crypto'));
+const express_validator_1 = require('express-validator');
 const fs_1 = __importDefault(require('fs'));
 const path_1 = __importDefault(require('path'));
 const sessions_model_1 = require('../models/sessions.model');
@@ -14,7 +15,62 @@ const users_model_1 = require('../models/users.model');
 const google_cloud_storage_helper_1 = require('../util/google_cloud_storage.helper');
 const userDPBucket = 'venue-review-user-dp';
 const updateUser = async (req, res) => {
-  throw new Error('Not implemented');
+  const validation = (0, express_validator_1.validationResult)(req);
+  if (!validation.isEmpty()) {
+    return res.status(400).json({ errors: validation.array() });
+  }
+  let token = req.header('Authorization')?.toString() ?? '';
+  let hashedToken = crypto_1.default
+    .createHash('sha512')
+    .update(token)
+    .digest('hex');
+  let user_id = await (0, sessions_model_1.getByToken)(hashedToken);
+  let user = await (0, users_model_1.getUsernameEmailById)(user_id);
+  // Check email, if different to one currently used.
+  if (user != null && user.email != req.body.email) {
+    // Get user by email from database, to see if there is one already. Fail request if so.
+    let userByEmail = await (0, users_model_1.getUserByEmail)(req.body.email);
+    if (userByEmail != null) {
+      res.status(400).json({ status: 400, message: 'Email already in use.' });
+      return;
+    }
+  }
+  // Check username, if different to one currently used.
+  if (user != null && user.email != req.body.email) {
+    // Get user by email from database, to see if there is one already. Fail request if so.
+    let userByUsername = await (0, users_model_1.getUserByUsername)(
+      req.body.username,
+    );
+    if (userByUsername != null) {
+      res
+        .status(400)
+        .json({ status: 400, message: 'Username already in use.' });
+      return;
+    }
+  }
+  let values = [
+    req.body.username,
+    req.body.email,
+    req.body.given_name,
+    req.body.family_name,
+    user_id,
+  ];
+  (0, users_model_1.updateUser)(values)
+    .then(() => {
+      res.status(200).json({ status: 200, message: 'OK' });
+    })
+    .catch((err) => {
+      if (err.code == 'ER_DUP_ENTRY') {
+        res
+          .status(400)
+          .json({
+            status: 400,
+            message: 'Username or email is not valid, or already in use.',
+          });
+        return;
+      }
+      res.status(500).json({ status: 500, message: err?.code ?? err });
+    });
 };
 exports.updateUser = updateUser;
 const uploadPhoto = async (req, res) => {
@@ -84,13 +140,11 @@ const removePhoto = async (req, res) => {
             res.status(204).json({ status: 204, message: 'No Content.' });
           })
           .catch((err) => {
-            console.log(err);
             res.status(500).json({ status: 500, message: err?.code ?? err });
           });
       });
     })
     .catch((err) => {
-      console.log(err);
       res.status(500).json({ status: 500, message: err?.code ?? err });
     });
 };
