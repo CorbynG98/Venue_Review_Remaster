@@ -127,7 +127,7 @@ jobs:
         node-version: [20.x]
     defaults:
       run:
-        working-directory: ./node_todo_api
+        working-directory: ./venue-review-api
 
     permissions:
       contents: 'read'
