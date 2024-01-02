@@ -14,7 +14,15 @@ if (process.env.NODE_ENV !== 'test') {
 let sessionToken: string = '';
 beforeAll(async () => {
   await createPool();
+  // Configure session
   sessionToken = await authenticateUser();
+  // Create a dummy image file
+  fs.writeFileSync(path.join(__dirname, './resources/test-image-venue.png'), 'mock content');
+});
+
+afterAll(() => {
+  // Clean up the dummy image file
+  fs.unlinkSync(path.join(__dirname, './resources/test-image-venue.png'));
 });
 
 const authenticateUser = async () => {
@@ -30,16 +38,12 @@ const uploadImageAndGetResult = async (
   venueId: string,
   makePrimary: boolean,
 ) => {
-  // Make sure file exists lol
-  if (!fs.existsSync(path.join(__dirname, './resources/test-image.png'))) {
-    throw new Error('File does not exist');
-  }
   // Plonk it into the request
   let response = await requestWithSupertest
     .post(`/venues/${venueId}/photos`)
     .set('Authorization', `${customSession}`)
     .set('Content-Type', 'multipart/form-data')
-    .attach('photo', path.join(__dirname, './resources/test-image.png'))
+    .attach('photo', path.join(__dirname, './resources/test-image-venue.png'))
     .field('description', 'This is an image')
     .field('is_primary', makePrimary)
     .expect('Content-Type', /json/)
@@ -50,16 +54,12 @@ const uploadImageAndGetResult = async (
 
 describe('Upload Venue Photo', () => {
   it('POST /venues/:id/photo with valid session and data (is_primary = true) should succeed', async () => {
-    // Make sure file exists lol
-    if (!fs.existsSync(path.join(__dirname, './resources/test-image.png'))) {
-      throw new Error('File does not exist');
-    }
     // Plonk it into the request
     await requestWithSupertest
       .post('/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos')
       .set('Authorization', `${sessionToken}`)
       .set('Content-Type', 'multipart/form-data')
-      .attach('photo', path.join(__dirname, './resources/test-image.png'))
+      .attach('photo', path.join(__dirname, './resources/test-image-venue.png'))
       .field('description', 'This is an image')
       .field('is_primary', true)
       .expect('Content-Type', /json/)
@@ -67,16 +67,12 @@ describe('Upload Venue Photo', () => {
   });
 
   it('POST /venues/:id/photo with valid session and data (is_primary = false) should succeed', async () => {
-    // Make sure file exists lol
-    if (!fs.existsSync(path.join(__dirname, './resources/test-image.png'))) {
-      throw new Error('File does not exist');
-    }
     // Plonk it into the request
     await requestWithSupertest
       .post('/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos')
       .set('Authorization', `${sessionToken}`)
       .set('Content-Type', 'multipart/form-data')
-      .attach('photo', path.join(__dirname, './resources/test-image.png'))
+      .attach('photo', path.join(__dirname, './resources/test-image-venue.png'))
       .field('description', 'This is an image')
       .field('is_primary', false)
       .expect('Content-Type', /json/)
@@ -84,48 +80,36 @@ describe('Upload Venue Photo', () => {
   });
 
   it('POST /venues/:id/photo with valid session and valid data without is_primary should fail', async () => {
-    // Make sure file exists lol
-    if (!fs.existsSync(path.join(__dirname, './resources/test-image.png'))) {
-      throw new Error('File does not exist');
-    }
     // Plonk it into the request
     await requestWithSupertest
       .post('/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos')
       .set('Authorization', `${sessionToken}`)
       .set('Content-Type', 'multipart/form-data')
-      .attach('photo', path.join(__dirname, './resources/test-image.png'))
+      .attach('photo', path.join(__dirname, './resources/test-image-venue.png'))
       .field('description', 'This is an image')
       .expect('Content-Type', /json/)
       .expect(400);
   });
 
   it('POST /venues/:id/photo with valid session and valid data without description should succeed', async () => {
-    // Make sure file exists lol
-    if (!fs.existsSync(path.join(__dirname, './resources/test-image.png'))) {
-      throw new Error('File does not exist');
-    }
     // Plonk it into the request
     await requestWithSupertest
       .post('/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos')
       .set('Authorization', `${sessionToken}`)
       .set('Content-Type', 'multipart/form-data')
-      .attach('photo', path.join(__dirname, './resources/test-image.png'))
+      .attach('photo', path.join(__dirname, './resources/test-image-venue.png'))
       .field('is_primary', false)
       .expect('Content-Type', /json/)
       .expect(201);
   });
 
   it('POST /venues/:id/photo with an invalid session and valid data should fail', async () => {
-    // Make sure file exists lol
-    if (!fs.existsSync(path.join(__dirname, './resources/test-image.png'))) {
-      throw new Error('File does not exist');
-    }
     // Plonk it into the request
     await requestWithSupertest
       .post('/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos')
       .set('Authorization', `totallyInvalid`)
       .set('Content-Type', 'multipart/form-data')
-      .attach('photo', path.join(__dirname, './resources/test-image.png'))
+      .attach('photo', path.join(__dirname, './resources/test-image-venue.png'))
       .field('description', 'This is an image')
       .field('is_primary', false)
       .expect('Content-Type', /json/)
@@ -133,15 +117,11 @@ describe('Upload Venue Photo', () => {
   });
 
   it('POST /venues/:id/photo with no session and valid data should fail', async () => {
-    // Make sure file exists lol
-    if (!fs.existsSync(path.join(__dirname, './resources/test-image.png'))) {
-      throw new Error('File does not exist');
-    }
     // Plonk it into the request
     await requestWithSupertest
       .post('/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos')
       .set('Content-Type', 'multipart/form-data')
-      .attach('photo', path.join(__dirname, './resources/test-image.png'))
+      .attach('photo', path.join(__dirname, './resources/test-image-venue.png'))
       .field('description', 'This is an image')
       .field('is_primary', false)
       .expect('Content-Type', /json/)
@@ -149,16 +129,12 @@ describe('Upload Venue Photo', () => {
   });
 
   it('POST /venues/:id/photo with valid session and data but on an account where not admin should fail', async () => {
-    // Make sure file exists lol
-    if (!fs.existsSync(path.join(__dirname, './resources/test-image.png'))) {
-      throw new Error('File does not exist');
-    }
     // Plonk it into the request
     await requestWithSupertest
       .post('/venues/708001fc65af4df19fcba9235c09f439/photos')
       .set('Authorization', `${sessionToken}`)
       .set('Content-Type', 'multipart/form-data')
-      .attach('photo', path.join(__dirname, './resources/test-image.png'))
+      .attach('photo', path.join(__dirname, './resources/test-image-venue.png'))
       .field('description', 'This is an image')
       .field('is_primary', false)
       .expect('Content-Type', /json/)

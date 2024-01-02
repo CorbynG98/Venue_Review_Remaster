@@ -14,6 +14,13 @@ if (process.env.NODE_ENV !== 'test') {
 beforeAll(async () => {
   await createPool();
   await authenticateUser();
+  // Create a dummy image file
+  fs.writeFileSync(path.join(__dirname, './resources/test-image-user.png'), 'mock content');
+});
+
+afterAll(() => {
+  // Clean up the dummy image file
+  fs.unlinkSync(path.join(__dirname, './resources/test-image-user.png'));
 });
 
 let sessionToken: string = '';
@@ -235,7 +242,7 @@ describe('Update User', () => {
 describe('Upload Photo', () => {
   it('POST /users/photo with valid data should succeed', async () => {
     // Make sure file exists lol
-    if (!fs.existsSync(path.join(__dirname, './resources/test-image.png'))) {
+    if (!fs.existsSync(path.join(__dirname, './resources/test-image-user.png'))) {
       throw new Error('File does not exist');
     }
     // Plonk it into the request
@@ -243,7 +250,7 @@ describe('Upload Photo', () => {
       .put('/users/photo')
       .set('Authorization', `${sessionToken}`)
       .set('Content-Type', 'multipart/form-data')
-      .attach('photo', path.join(__dirname, './resources/test-image.png'))
+      .attach('photo', path.join(__dirname, './resources/test-image-user.png'))
       .expect('Content-Type', /json/)
       .expect(201);
 
@@ -252,7 +259,7 @@ describe('Upload Photo', () => {
 
   it('POST /users/photo with an invalid token should fail', async () => {
     // Make sure file exists lol
-    if (!fs.existsSync(path.join(__dirname, './resources/test-image.png'))) {
+    if (!fs.existsSync(path.join(__dirname, './resources/test-image-user.png'))) {
       throw new Error('File does not exist');
     }
     // Plonk it into the request
@@ -260,21 +267,21 @@ describe('Upload Photo', () => {
       .put('/users/photo')
       .set('Authorization', `totallyInvalid`)
       .set('Content-Type', 'multipart/form-data')
-      .attach('photo', path.join(__dirname, './resources/test-image.png'))
+      .attach('photo', path.join(__dirname, './resources/test-image-user.png'))
       .expect('Content-Type', /json/)
       .expect(403);
   });
 
   it('POST /users/photo with no token should fail', async () => {
     // Make sure file exists lol
-    if (!fs.existsSync(path.join(__dirname, './resources/test-image.png'))) {
+    if (!fs.existsSync(path.join(__dirname, './resources/test-image-user.png'))) {
       throw new Error('File does not exist');
     }
     // Plonk it into the request
     await requestWithSupertest
       .put('/users/photo')
       .set('Content-Type', 'multipart/form-data')
-      .attach('photo', path.join(__dirname, './resources/test-image.png'))
+      .attach('photo', path.join(__dirname, './resources/test-image-user.png'))
       .expect('Content-Type', /json/)
       .expect(401);
   });
