@@ -9,19 +9,34 @@ const router = createRouter({
       component: () => import('../views/VenuesView.vue')
     },
     {
-      path: '/venues',
+      path: '/Home',
+      name: 'home',
+      component: () => import('../views/VenuesView.vue')
+    },
+    {
+      path: '/Venues',
       name: 'venues',
       component: () => import('../views/VenuesView.vue')
     },
     {
-      path: '/signin',
+      path: '/Signin',
       name: 'signin',
       component: () => import('../views/SigninView.vue')
     },
     {
-      path: '/signup',
+      path: '/Login',
+      name: 'login',
+      component: () => import('../views/SigninView.vue')
+    },
+    {
+      path: '/Signup',
       name: 'signup',
       component: () => import('../views/SignupView.vue')
+    },
+    {
+      path: '/Profile',
+      name: 'profile',
+      component: () => import('../views/ProfileView.vue')
     }
   ]
 })

@@ -5,11 +5,8 @@
 </template>
 
 <style>
-@media (min-width: 1024px) {
-  .signup {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
+.signup {
+  min-height: 100vh;
+  padding: 1rem;
 }
 </style>
