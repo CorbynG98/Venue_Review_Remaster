@@ -2,7 +2,7 @@ import { QueryError } from 'mysql2';
 import { getPool } from '../config/db';
 
 export default interface SessionResource {
-  session_token: string;
+  token: string;
   created_at: Date;
   user_id: string;
 }
@@ -67,3 +67,4 @@ const verifyVenueAuth = (
 };
 
 export { createSession, getByToken, removeSession, verifyVenueAuth };
+

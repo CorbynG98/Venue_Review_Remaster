@@ -5,7 +5,7 @@
   "scripts": {
     "build": "npx tsc --project tsconfig.build.json",
     "start": "node dist/server.js",
-    "dev": "cross-env NODE_ENV=development concurrently \"npx tsc --watch\" \"nodemon -q dist/server.js\"",
+    "dev": "cross-env NODE_ENV=development concurrently \"npx tsc --watch --project tsconfig.build.json\" \"nodemon -q dist/server.js\"",
     "prettier": "prettier --write .",
     "test": "cross-env NODE_ENV=test jest --testTimeout=10000 --runInBand --detectOpenHandles --forceExit"
   },

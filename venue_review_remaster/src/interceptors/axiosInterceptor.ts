@@ -1,4 +1,4 @@
-import { getCookie } from '@/storageClient/storageclient'
+import { getAuthCookie } from '@/storageClient/storageclient'
 import { store } from '@/store'
 import axios from 'axios'
 import { Notyf } from 'notyf'
@@ -15,7 +15,7 @@ const notyf = new Notyf({
 
 axiosNodeInstance.interceptors.request.use(async (config: any) => {
   // Get data from async storage for processing reasons
-  let auth = await getCookie('authData')
+  let auth = await getAuthCookie()
   if (auth != null && auth.token != null) {
     config.headers.Authorization = `${auth.token}`
   }
@@ -37,11 +37,11 @@ axiosNodeInstance.interceptors.response.use(
       }
       if (error.response.status === 401) {
         notyf.error('Authentication error.')
-        store.dispatch('signout') // Rejection handled on next in few lines anyways. No need to reject here too.
+        store.commit('SIGNOUT') // Rejection handled on next in few lines anyways. No need to reject here too.
       }
       return Promise.reject(error || 'Something went wrong')
     }
   }
 )
 
-export default axiosNodeInstance
+export { axiosNodeInstance }

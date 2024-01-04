@@ -33,7 +33,7 @@ export const uploadFile = async (
       .bucket(bucketName)
       .upload(filePath)
       .then((result) => {
-        resolve(result[0].metadata.selfLink ?? null);
+        resolve(result[0].metadata.mediaLink ?? null);
       })
       .catch((err) => {
         reject(err);

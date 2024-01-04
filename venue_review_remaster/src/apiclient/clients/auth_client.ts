@@ -1,5 +1,5 @@
 import { AxiosResponse, CancelTokenSource } from 'axios'
-import { default as getAxiosInterceptor } from '../../interceptors/axiosInterceptor'
+import { axiosNodeInstance as axios } from '../../interceptors/axiosInterceptor'
 import { AuthData, AuthResource } from '../../models/AuthResource'
 
 export const Authenticate = async (
@@ -11,13 +11,14 @@ export const Authenticate = async (
   body.append('password', data.password ?? '')
   const endpoint = '/auth/signin'
   try {
-    const axios = await getAxiosInterceptor()
     const response = await axios.post<AuthResource, AxiosResponse<AuthData>>(endpoint, body, {
       cancelToken: cancelToken?.token
     })
     var auth = {
       username: response.data.username,
-      session_token: response.data.session_token
+      token: response.data.token,
+      fullName: response.data.fullName,
+      profile_photo_filename: response.data.profile_photo_filename
     } as AuthData
     return Promise.resolve(auth)
   } catch (err) {
@@ -34,13 +35,14 @@ export const Signup = async (
   body.append('password', data.password ?? '')
   const endpoint = '/auth/signup'
   try {
-    const axios = await getAxiosInterceptor()
     const response = await axios.post<AuthResource, AxiosResponse<AuthData>>(endpoint, body, {
       cancelToken: cancelToken?.token
     })
     var auth = {
       username: response.data.username,
-      session_token: response.data.session_token
+      token: response.data.token,
+      fullName: response.data.fullName,
+      profile_photo_filename: response.data.profile_photo_filename
     } as AuthData
     return Promise.resolve(auth)
   } catch (err) {
@@ -51,7 +53,6 @@ export const Signup = async (
 export const Signout = async (cancelToken: CancelTokenSource | undefined | null = null) => {
   const endpoint = '/auth/signout'
   try {
-    const axios = await getAxiosInterceptor()
     await axios.post<null, AxiosResponse<null>>(endpoint, null, {
       cancelToken: cancelToken?.token
     })

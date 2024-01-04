@@ -60,7 +60,7 @@ const login = async (req: Request, res: Response) => {
         userData?.user_id ?? null,
       ];
       create_session(session_values).then(() => {
-        res.status(200).json({ username: req.body.username, token: token });
+        res.status(200).json({ username: req.body.username, token: token, fullName: userData?.given_name + ' ' + userData?.family_name, profile_photo_filename: userData?.profile_photo_filename });
       });
     });
   } catch (err) {
@@ -107,7 +107,7 @@ const create = async (req: Request, res: Response) => {
             user_id,
           ];
           create_session(session_values).then(() => {
-            res.status(200).json({ username: req.body.username, token: token });
+            res.status(200).json({ username: req.body.username, token: token, fullName: req.body.givenName + ' ' + req.body.familyName });
           });
         })
         .catch((err) => {
@@ -141,3 +141,4 @@ const signout = async (req: Request, res: Response) => {
 };
 
 export { create, login, signout };
+

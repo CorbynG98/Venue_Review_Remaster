@@ -5,5 +5,7 @@ export type AuthResource = {
 
 export type AuthData = {
   username: string | null | undefined
-  session_token: string | null | undefined
+  token: string | null | undefined
+  fullName: string | null | undefined
+  profile_photo_filename: string | null | undefined
 }

@@ -18,9 +18,9 @@ export default {
         <div v-if="this.$store.state.isLoggedIn">
           <v-list>
             <v-list-item
-              prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
-              title="Sandra Adams"
-              subtitle="sandra_a88@gmailcom"
+              :prepend-avatar="this.$store.state.profile_photo_filename ?? 'https://storage.googleapis.com/venue-review-user-dp/default-profile.png'"
+              :title="this.$store.state.fullName"
+              :subtitle="this.$store.state.username"
             ></v-list-item>
           </v-list>
 
@@ -60,7 +60,7 @@ export default {
         </template>
       </v-navigation-drawer>
 
-      <v-main style="height: 100%">
+      <v-main style="height: 100%; background-color: var(--color-background)">
         <RouterView />
       </v-main>
     </v-layout>

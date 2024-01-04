@@ -8,12 +8,14 @@ export default interface UserResource {
   given_name: string;
   family_name: string;
   password: string;
-  profile_photo_filename: string;
 }
 
 interface UserIdPasswordResource {
   user_id: string;
   password: string;
+  given_name: string;
+  family_name: string;
+  profile_photo_filename: string;
 }
 
 const getUsernameEmailById = (
@@ -38,7 +40,7 @@ const getUserByEmail = (
 ): Promise<UserIdPasswordResource | null> => {
   return new Promise((resolve, reject) => {
     getPool().query(
-      'SELECT user_id, password FROM User WHERE email = ? LIMIT 1',
+      'SELECT user_id, password, given_name, family_name, profile_photo_filename FROM User WHERE email = ? LIMIT 1',
       email,
       (err: QueryError | null, result: any) => {
         if (err) return reject(err);
@@ -55,7 +57,7 @@ const getUserByUsername = (
 ): Promise<UserIdPasswordResource | null> => {
   return new Promise((resolve, reject) => {
     getPool().query(
-      'SELECT user_id, password FROM User WHERE username = ? LIMIT 1',
+      'SELECT user_id, password, given_name, family_name, profile_photo_filename FROM User WHERE username = ? LIMIT 1',
       username,
       (err: QueryError | null, result: any) => {
         if (err) return reject(err);
@@ -146,5 +148,6 @@ export {
   getUsernameEmailById,
   removePhoto,
   updateUser,
-  uploadPhoto,
+  uploadPhoto
 };
+

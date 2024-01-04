@@ -1,13 +1,21 @@
 import { useCookies } from 'vue3-cookies'
 
-export const setAuthDataCookie = (username: string, token: string) => {
-  const { cookies } = useCookies()
-  cookies.set('authData', JSON.stringify({ username: username, token: token }))
+interface AuthCookie {
+  username: string
+  token: string
+  fullName: string | null | undefined,
+  profile_photo_filename: string | null | undefined
 }
 
-export const getCookie = (cookieName: string) => {
+export const setAuthDataCookie = (data: AuthCookie) => {
   const { cookies } = useCookies()
-  return JSON.parse(cookies.get(cookieName))
+  cookies.set('authData', JSON.stringify(data))
+}
+
+export const getAuthCookie = () => {
+  const { cookies } = useCookies()
+  var cookie = cookies.get('authData')
+  return cookie as unknown as AuthCookie
 }
 
 export const removeCookie = (cookieName: string) => {

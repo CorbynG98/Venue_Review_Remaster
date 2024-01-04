@@ -1,6 +1,6 @@
 import { Authenticate, Signout } from '@/apiclient/apiclient'
 import State from '@/models/State'
-import { getCookie, removeCookie, setAuthDataCookie } from '@/storageClient/storageclient'
+import { getAuthCookie, removeCookie, setAuthDataCookie } from '@/storageClient/storageclient'
 import { CancelTokenSource } from 'axios'
 import { createStore } from 'vuex'
 
@@ -13,7 +13,9 @@ export const store = createStore<State>({
   state: {
     isLoggedIn: false,
     username: null,
-    token: null
+    token: null,
+    fullName: null,
+    profile_photo_filename: null
   },
   getters: {
     isLoggedIn(state) {
@@ -25,6 +27,8 @@ export const store = createStore<State>({
       state.isLoggedIn = true
       state.username = data.username
       state.token = data.token
+      state.fullName = data.fullName
+      state.profile_photo_filename = data.profile_photo_filename
     },
     LOGOUT(state) {
       state.isLoggedIn = false
@@ -35,14 +39,19 @@ export const store = createStore<State>({
       state.isLoggedIn = data.username == null ? false : true
       state.username = data.username
       state.token = data.token
+      state.fullName = data.fullName
+      state.profile_photo_filename = data.profile_photo_filename
     }
   },
   actions: {
     async initBaseData({ commit }) {
-      const authData = await getCookie('authData')
+      const authData = await getAuthCookie()
+      console.log(authData);
       commit('INITDATA', {
         username: authData?.username,
-        token: authData?.token
+        token: authData?.token,
+        fullName: authData?.fullName,
+        profile_photo_filename: authData?.profile_photo_filename
       })
     },
     async signin(
@@ -51,10 +60,12 @@ export const store = createStore<State>({
       cancelToken: CancelTokenSource | undefined | null = null
     ) {
       var result = await Authenticate(credentials, cancelToken)
-      setAuthDataCookie(result.username ?? '', result.session_token ?? '')
+      setAuthDataCookie({ username: result?.username, token: result?.token, fullName: result?.fullName, profile_photo_filename: result?.profile_photo_filename })
       commit('LOGIN', {
-        username: result.username ?? '',
-        token: result.session_token ?? ''
+        username: result.username,
+        token: result.token,
+        fullName: result?.fullName,
+        profile_photo_filename: result?.profile_photo_filename
       })
     },
     async signout({ commit }, cancelToken: CancelTokenSource | undefined | null = null) {
