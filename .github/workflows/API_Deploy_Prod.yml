@@ -140,8 +140,8 @@ jobs:
         name: "Authenticate Google Cloud"
         uses: 'google-github-actions/auth@v1'
         with:
-          workload_identity_provider: 'projects/731679007643/locations/global/workloadIdentityPools/github-actions/providers/rails-todo-identity-pool-github'
-          service_account: github-actions@rails-todo-app-386721.iam.gserviceaccount.com
+          workload_identity_provider: 'projects/473772735791/locations/global/workloadIdentityPools/github-actions/providers/personal-identity-pool-github'
+          service_account: github-actions@venue-review-seng365.iam.gserviceaccount.com
 
       - name: Configure Google Cloud
         uses: google-github-actions/setup-gcloud@v1
