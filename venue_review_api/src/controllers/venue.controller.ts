@@ -258,21 +258,29 @@ const createVenuePhoto = async (req: Request, res: Response) => {
   if (req.file == null)
     return res.status(400).json({ status: 400, message: 'No file provided.' });
 
+  console.log("Trace 1")
+
   let image = req.file.buffer;
   let imageExt = req.file.mimetype.split('/')[1];
   let fileName = `${venue_id}-${uuidv4().replace(/-/g, '')}.${imageExt}`;
+
+  console.log("Trace 2")
 
   let imageDIR = `./${venuePhotoBucket}`;
   if (!fs.existsSync(imageDIR) && process.env.NODE_ENV != 'test') {
     fs.mkdirSync(imageDIR);
   }
 
+  console.log("Trace 3")
+
   try {
     // Only do real file writes if we are not in test mode.
     if (process.env.NODE_ENV != 'test')
       fs.writeFileSync(`${imageDIR}/${fileName}`, image);
     let filePath = path.resolve(`${imageDIR}/${fileName}`);
+    console.log("Trace 4", filePath)
     upload_file(filePath, venuePhotoBucket).then((result) => {
+      console.log("Trace 5", result)
       // Only do real file deletes if we are not in test mode.
       if (process.env.NODE_ENV != 'test')
         fs.rmSync(imageDIR, { recursive: true }); // Delete the local file now that storage upload succeeded
@@ -282,14 +290,18 @@ const createVenuePhoto = async (req: Request, res: Response) => {
         req.body.description ?? '',
         req.body.is_primary == 'true',
       ];
+      console.log("Trace 6", values)
       upload_venue_photo(values)
         .then(() => {
+          console.log("Trace 7", req.body.is_primary as boolean)
           if (req.body.is_primary as boolean) {
             // Make sure others are not primary
             ensure_one_primary([venue_id, result]).then(() => {
+              console.log("Trace 8")
               res.status(201).json({ status: 201, message: result });
             });
           } else {
+            console.log("Trace 8")
             res.status(201).json({ status: 201, message: result });
           }
         })
