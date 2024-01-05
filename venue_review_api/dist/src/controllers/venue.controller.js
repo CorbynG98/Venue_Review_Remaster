@@ -215,10 +215,14 @@ const createVenuePhoto = async (req, res) => {
         fs_1.default.mkdirSync(imageDIR);
     }
     try {
-        fs_1.default.writeFileSync(`${imageDIR}/${fileName}`, image);
+        // Only do real file writes if we are not in test mode.
+        if (process.env.NODE_ENV != 'test')
+            fs_1.default.writeFileSync(`${imageDIR}/${fileName}`, image);
         let filePath = path_1.default.resolve(`${imageDIR}/${fileName}`);
         (0, google_cloud_storage_helper_1.uploadFile)(filePath, venuePhotoBucket).then((result) => {
-            fs_1.default.rmSync(imageDIR, { recursive: true }); // Delete the local file now that storage upload succeeded
+            // Only do real file deletes if we are not in test mode.
+            if (process.env.NODE_ENV != 'test')
+                fs_1.default.rmSync(imageDIR, { recursive: true }); // Delete the local file now that storage upload succeeded
             let values = [
                 venue_id,
                 result,

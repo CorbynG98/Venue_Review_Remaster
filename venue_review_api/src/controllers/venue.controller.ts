@@ -110,12 +110,12 @@ const getVenues = async (req: Request, res: Response) => {
 
   let maxCostRating =
     req.query.maxCostRating != null &&
-    req.query.maxCostRating.toString().length > 0
+      req.query.maxCostRating.toString().length > 0
       ? Number(req.query.maxCostRating?.toString())
       : null;
   let minStarRating =
     req.query.minStarRating != null &&
-    req.query.minStarRating.toString().length > 0
+      req.query.minStarRating.toString().length > 0
       ? Number(req.query.minStarRating?.toString())
       : null;
 
@@ -268,10 +268,14 @@ const createVenuePhoto = async (req: Request, res: Response) => {
   }
 
   try {
-    fs.writeFileSync(`${imageDIR}/${fileName}`, image);
+    // Only do real file writes if we are not in test mode.
+    if (process.env.NODE_ENV != 'test')
+      fs.writeFileSync(`${imageDIR}/${fileName}`, image);
     let filePath = path.resolve(`${imageDIR}/${fileName}`);
     upload_file(filePath, venuePhotoBucket).then((result) => {
-      fs.rmSync(imageDIR, { recursive: true }); // Delete the local file now that storage upload succeeded
+      // Only do real file deletes if we are not in test mode.
+      if (process.env.NODE_ENV != 'test')
+        fs.rmSync(imageDIR, { recursive: true }); // Delete the local file now that storage upload succeeded
       let values = [
         venue_id,
         result,
@@ -356,5 +360,6 @@ export {
   getVenues,
   removePhoto,
   setNewPrimary,
-  updateVenue,
+  updateVenue
 };
+

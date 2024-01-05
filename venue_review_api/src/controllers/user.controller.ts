@@ -94,10 +94,14 @@ const uploadPhoto = async (req: Request, res: Response) => {
   }
 
   try {
-    fs.writeFileSync(`${imageDIR}/${fileName}`, image);
+    // Only do real file writes if we are not in test mode.
+    if (process.env.NODE_ENV != 'test')
+      fs.writeFileSync(`${imageDIR}/${fileName}`, image);
     let filePath = path.resolve(`${imageDIR}/${fileName}`);
     upload_file(filePath, userDPBucket).then((result) => {
-      fs.rmSync(imageDIR, { recursive: true }); // Delete the local file now that storage upload succeeded
+      // Only do real file deletes if we are not in test mode.
+      if (process.env.NODE_ENV != 'test')
+        fs.rmSync(imageDIR, { recursive: true }); // Delete the local file now that storage upload succeeded
       let values = [result, user_id];
       upload_user_dp(values)
         .then(() => {
@@ -148,3 +152,4 @@ const removePhoto = async (req: Request, res: Response) => {
 };
 
 export { removePhoto, updateUser, uploadPhoto };
+
