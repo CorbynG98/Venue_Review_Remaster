@@ -1,8 +1,6 @@
 import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import fs from 'fs';
-import path from 'path';
 import { getByToken as get_session_by_token } from '../models/sessions.model';
 import {
   getUserByEmail as get_user_by_email,
@@ -86,20 +84,8 @@ const uploadPhoto = async (req: Request, res: Response) => {
   let imageExt = req.file.mimetype.split('/')[1];
   let fileName = `${user_id}.${imageExt}`;
 
-  let imageDIR = `./${userDPBucket}`;
-  if (!fs.existsSync(imageDIR) && process.env.NODE_ENV != 'test') {
-    fs.mkdirSync(imageDIR);
-  }
-
   try {
-    // Only do real file writes if we are not in test mode.
-    if (process.env.NODE_ENV != 'test')
-      fs.writeFileSync(`${imageDIR}/${fileName}`, image);
-    let filePath = path.resolve(`${imageDIR}/${fileName}`);
-    upload_file(filePath, userDPBucket).then((result) => {
-      // Only do real file deletes if we are not in test mode.
-      if (process.env.NODE_ENV != 'test')
-        fs.rmSync(imageDIR, { recursive: true }); // Delete the local file now that storage upload succeeded
+    upload_file(fileName, image, userDPBucket).then((result) => {
       let values = [result, user_id];
       upload_user_dp(values)
         .then(() => {
@@ -110,9 +96,6 @@ const uploadPhoto = async (req: Request, res: Response) => {
         });
     });
   } catch (err) {
-    // Only do real file deletes if we are not in test mode.
-    if (process.env.NODE_ENV != 'test')
-      fs.rmSync(imageDIR, { recursive: true }); // Delete the local file, we had a failure, and don't want these to hang around.
     res.status(500).json({ status: 500, message: err });
   }
 };

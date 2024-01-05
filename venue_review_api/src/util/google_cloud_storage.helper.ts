@@ -11,15 +11,16 @@ const storage = new Storage({
 const isTest = process.env.NODE_ENV == 'test';
 
 export const uploadFile = async (
-  filePath: string,
+  fileName: string,
+  fileBuffer: Buffer,
   bucketName: string,
 ): Promise<string | null> => {
   return new Promise(async (resolve, reject) => {
     if (isTest) {
-      var filePathSplit = filePath.split(`\\${bucketName}\\`);
-      return resolve(filePathSplit[1]); // On test mode, don't actually call google. Just mimic a success
+      return resolve(fileName); // On test mode, don't actually call google. Just mimic a success
     }
 
+    // Make sure the bucket we are trying to interact with exists
     try {
       await storage.createBucket(bucketName);
     } catch (err: any) {
@@ -29,12 +30,12 @@ export const uploadFile = async (
       }
     }
 
-    storage
-      .bucket(bucketName)
-      .upload(filePath)
-      .then((result) => {
-        resolve(result[0].metadata.mediaLink ?? null);
-      })
+    const bucket = storage.bucket(bucketName);
+    const file = bucket.file(fileName);
+
+    file.save(fileBuffer).then(() => {
+      file.metadata.mediaLink ?? null;
+    })
       .catch((err) => {
         reject(err);
       });
