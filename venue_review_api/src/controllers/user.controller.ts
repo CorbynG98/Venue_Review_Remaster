@@ -87,7 +87,7 @@ const uploadPhoto = async (req: Request, res: Response) => {
   let fileName = `${user_id}.${imageExt}`;
 
   let imageDIR = `./${userDPBucket}`;
-  if (!fs.existsSync(imageDIR)) {
+  if (!fs.existsSync(imageDIR) && process.env.NODE_ENV != 'test') {
     fs.mkdirSync(imageDIR);
   }
 
@@ -110,7 +110,9 @@ const uploadPhoto = async (req: Request, res: Response) => {
         });
     });
   } catch (err) {
-    fs.rmSync(imageDIR, { recursive: true }); // Delete the local file, we had a failure, and don't want these to hang around.
+    // Only do real file deletes if we are not in test mode.
+    if (process.env.NODE_ENV != 'test')
+      fs.rmSync(imageDIR, { recursive: true }); // Delete the local file, we had a failure, and don't want these to hang around.
     res.status(500).json({ status: 500, message: err });
   }
 };
@@ -150,3 +152,4 @@ const removePhoto = async (req: Request, res: Response) => {
 };
 
 export { removePhoto, updateUser, uploadPhoto };
+
