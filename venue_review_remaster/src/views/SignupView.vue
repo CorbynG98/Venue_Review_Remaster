@@ -47,7 +47,13 @@
 
         <div class="buttonContainer">
           <div style="width: 6rem">
-            <v-btn v-on:click="signup()" type="submit" block style="background-color: #55cc69" v-bind:disabled="signupLoading">
+            <v-btn
+              v-on:click="signup()"
+              type="submit"
+              block
+              style="background-color: #55cc69"
+              v-bind:disabled="signupLoading"
+            >
               <p v-if="!signupLoading" style="font-weight: bold">Signup</p>
               <semipolar-spinner
                 :animation-duration="2000"
@@ -69,8 +75,8 @@
 </template>
 
 <script lang="ts">
-import { SemipolarSpinner } from 'epic-spinners';
-import notyf from '../components/NotyfComponent';
+import { SemipolarSpinner } from 'epic-spinners'
+import notyf from '../components/NotyfComponent'
 export default {
   components: { SemipolarSpinner },
   data: () => ({
@@ -90,7 +96,7 @@ export default {
     ],
     passwordRules: [
       (value) => !!value || 'Required.',
-      (value) => (value && value.length >= 8) || 'Min 8 characters',
+      (value) => (value && value.length >= 8) || 'Min 8 characters'
     ],
     userData: {
       username: '',
@@ -109,18 +115,18 @@ export default {
   },
   computed: {
     passwordConfirmationRule() {
-        return (value) => (value === this.userData.password) || 'Passwords must match'
-    },
+      return (value) => value === this.userData.password || 'Passwords must match'
+    }
   },
   methods: {
     confirmPasswordRules() {
       return this.passwordRules.concat(this.passwordConfirmationRule)
     },
-    signup: async function() {
+    signup: async function () {
       const { valid } = await this.$refs.form.validate()
       if (!valid) {
-        notyf.error('Fix validation errors, and try again.');
-        return;
+        notyf.error('Fix validation errors, and try again.')
+        return
       }
       this.signupLoading = true
       try {
@@ -132,7 +138,7 @@ export default {
         this.signupLoading = false
       }
     }
-  },
+  }
 }
 </script>
 

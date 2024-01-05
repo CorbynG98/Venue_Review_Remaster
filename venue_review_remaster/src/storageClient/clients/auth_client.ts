@@ -3,7 +3,7 @@ import { useCookies } from 'vue3-cookies'
 interface AuthCookie {
   username: string
   token: string
-  fullName: string | null | undefined,
+  fullName: string | null | undefined
   profile_photo_filename: string | null | undefined
 }
 

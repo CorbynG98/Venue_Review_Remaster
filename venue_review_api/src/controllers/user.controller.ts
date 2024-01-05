@@ -64,12 +64,10 @@ const updateUser = async (req: Request, res: Response) => {
     })
     .catch((err) => {
       if (err.code == 'ER_DUP_ENTRY') {
-        res
-          .status(400)
-          .json({
-            status: 400,
-            message: 'Username or email is not valid, or already in use.',
-          });
+        res.status(400).json({
+          status: 400,
+          message: 'Username or email is not valid, or already in use.',
+        });
         return;
       }
       res.status(500).json({ status: 500, message: err?.code ?? err });
@@ -152,4 +150,3 @@ const removePhoto = async (req: Request, res: Response) => {
 };
 
 export { removePhoto, updateUser, uploadPhoto };
-

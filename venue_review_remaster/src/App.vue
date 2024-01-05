@@ -18,7 +18,10 @@ export default {
         <div v-if="this.$store.state.isLoggedIn">
           <v-list>
             <v-list-item
-              :prepend-avatar="this.$store.state.profile_photo_filename ?? 'https://storage.googleapis.com/venue-review-user-dp/default-profile.png'"
+              :prepend-avatar="
+                this.$store.state.profile_photo_filename ??
+                'https://storage.googleapis.com/venue-review-user-dp/default-profile.png'
+              "
               :title="this.$store.state.fullName"
               :subtitle="this.$store.state.username"
             ></v-list-item>

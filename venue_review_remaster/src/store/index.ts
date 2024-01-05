@@ -47,7 +47,7 @@ export const store = createStore<State>({
   actions: {
     async initBaseData({ commit }) {
       const authData = await getAuthCookie()
-      console.log(authData);
+      console.log(authData)
       commit('INITDATA', {
         username: authData?.username,
         token: authData?.token,
@@ -61,7 +61,12 @@ export const store = createStore<State>({
       cancelToken: CancelTokenSource | undefined | null = null
     ) {
       var result = await Signup(userData, cancelToken)
-      setAuthDataCookie({ username: result?.username, token: result?.token, fullName: result?.fullName, profile_photo_filename: result?.profile_photo_filename })
+      setAuthDataCookie({
+        username: result?.username,
+        token: result?.token,
+        fullName: result?.fullName,
+        profile_photo_filename: result?.profile_photo_filename
+      })
       commit('LOGIN', {
         username: result.username,
         token: result.token,
@@ -75,7 +80,12 @@ export const store = createStore<State>({
       cancelToken: CancelTokenSource | undefined | null = null
     ) {
       var result = await Authenticate(credentials, cancelToken)
-      setAuthDataCookie({ username: result?.username, token: result?.token, fullName: result?.fullName, profile_photo_filename: result?.profile_photo_filename })
+      setAuthDataCookie({
+        username: result?.username,
+        token: result?.token,
+        fullName: result?.fullName,
+        profile_photo_filename: result?.profile_photo_filename
+      })
       commit('LOGIN', {
         username: result.username,
         token: result.token,

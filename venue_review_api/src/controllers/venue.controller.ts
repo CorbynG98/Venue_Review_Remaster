@@ -110,12 +110,12 @@ const getVenues = async (req: Request, res: Response) => {
 
   let maxCostRating =
     req.query.maxCostRating != null &&
-      req.query.maxCostRating.toString().length > 0
+    req.query.maxCostRating.toString().length > 0
       ? Number(req.query.maxCostRating?.toString())
       : null;
   let minStarRating =
     req.query.minStarRating != null &&
-      req.query.minStarRating.toString().length > 0
+    req.query.minStarRating.toString().length > 0
       ? Number(req.query.minStarRating?.toString())
       : null;
 
@@ -360,6 +360,5 @@ export {
   getVenues,
   removePhoto,
   setNewPrimary,
-  updateVenue
+  updateVenue,
 };
-

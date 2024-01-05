@@ -67,4 +67,3 @@ const verifyVenueAuth = (
 };
 
 export { createSession, getByToken, removeSession, verifyVenueAuth };
-

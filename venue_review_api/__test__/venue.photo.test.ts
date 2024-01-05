@@ -17,7 +17,10 @@ beforeAll(async () => {
   // Configure session
   sessionToken = await authenticateUser();
   // Create a dummy image file
-  fs.writeFileSync(path.join(__dirname, './resources/test-image-venue.png'), 'mock content');
+  fs.writeFileSync(
+    path.join(__dirname, './resources/test-image-venue.png'),
+    'mock content',
+  );
 });
 
 afterAll(() => {
@@ -60,7 +63,10 @@ describe('Upload Venue Photo', () => {
         .post('/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos')
         .set('Authorization', `${sessionToken}`)
         .set('Content-Type', 'multipart/form-data')
-        .attach('photo', path.join(__dirname, './resources/test-image-venue.png'))
+        .attach(
+          'photo',
+          path.join(__dirname, './resources/test-image-venue.png'),
+        )
         .field('description', 'This is an image')
         .field('is_primary', true);
 

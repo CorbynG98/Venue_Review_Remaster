@@ -15,7 +15,10 @@ beforeAll(async () => {
   await createPool();
   await authenticateUser();
   // Create a dummy image file
-  fs.writeFileSync(path.join(__dirname, './resources/test-image-user.png'), 'mock content');
+  fs.writeFileSync(
+    path.join(__dirname, './resources/test-image-user.png'),
+    'mock content',
+  );
 });
 
 afterAll(() => {
@@ -242,7 +245,9 @@ describe('Update User', () => {
 describe('Upload Photo', () => {
   it('POST /users/photo with valid data should succeed', async () => {
     // Make sure file exists lol
-    if (!fs.existsSync(path.join(__dirname, './resources/test-image-user.png'))) {
+    if (
+      !fs.existsSync(path.join(__dirname, './resources/test-image-user.png'))
+    ) {
       throw new Error('File does not exist');
     }
     // Plonk it into the request
@@ -259,7 +264,9 @@ describe('Upload Photo', () => {
 
   it('POST /users/photo with an invalid token should fail', async () => {
     // Make sure file exists lol
-    if (!fs.existsSync(path.join(__dirname, './resources/test-image-user.png'))) {
+    if (
+      !fs.existsSync(path.join(__dirname, './resources/test-image-user.png'))
+    ) {
       throw new Error('File does not exist');
     }
     // Plonk it into the request
@@ -274,7 +281,9 @@ describe('Upload Photo', () => {
 
   it('POST /users/photo with no token should fail', async () => {
     // Make sure file exists lol
-    if (!fs.existsSync(path.join(__dirname, './resources/test-image-user.png'))) {
+    if (
+      !fs.existsSync(path.join(__dirname, './resources/test-image-user.png'))
+    ) {
       throw new Error('File does not exist');
     }
     // Plonk it into the request

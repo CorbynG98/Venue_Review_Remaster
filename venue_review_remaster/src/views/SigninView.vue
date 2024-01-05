@@ -20,7 +20,13 @@
 
         <div class="buttonContainer">
           <div style="width: 6rem">
-            <v-btn v-on:click="signin()" type="submit" block style="background-color: #55cc69" v-bind:disabled="loginLoading">
+            <v-btn
+              v-on:click="signin()"
+              type="submit"
+              block
+              style="background-color: #55cc69"
+              v-bind:disabled="loginLoading"
+            >
               <p v-if="!loginLoading" style="font-weight: bold">Signin</p>
               <semipolar-spinner
                 :animation-duration="2000"
@@ -42,8 +48,8 @@
 </template>
 
 <script lang="ts">
-import { SemipolarSpinner } from 'epic-spinners';
-import notyf from '../components/NotyfComponent';
+import { SemipolarSpinner } from 'epic-spinners'
+import notyf from '../components/NotyfComponent'
 export default {
   components: { SemipolarSpinner },
   data: () => ({
@@ -67,11 +73,11 @@ export default {
     }
   },
   methods: {
-    signin: async function() {
+    signin: async function () {
       const { valid } = await this.$refs.form.validate()
       if (!valid) {
-        notyf.error('Fix validation errors, and try again.');
-        return;
+        notyf.error('Fix validation errors, and try again.')
+        return
       }
       this.loginLoading = true
       try {
@@ -83,7 +89,7 @@ export default {
         this.loginLoading = false
       }
     }
-  },
+  }
 }
 </script>
 

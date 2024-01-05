@@ -10,7 +10,6 @@ export type AuthData = {
   profile_photo_filename: string | null | undefined
 }
 
-
 export type UserSignupData = {
   givenName: string
   familyName: string

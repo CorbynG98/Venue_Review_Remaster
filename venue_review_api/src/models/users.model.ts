@@ -148,6 +148,5 @@ export {
   getUsernameEmailById,
   removePhoto,
   updateUser,
-  uploadPhoto
+  uploadPhoto,
 };
-
