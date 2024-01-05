@@ -9,3 +9,12 @@ export type AuthData = {
   fullName: string | null | undefined
   profile_photo_filename: string | null | undefined
 }
+
+
+export type UserSignupData = {
+  givenName: string
+  familyName: string
+  username: string
+  email: string
+  password: string
+}

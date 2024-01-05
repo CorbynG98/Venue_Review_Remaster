@@ -1,4 +1,5 @@
-import { Authenticate, Signout } from '@/apiclient/apiclient'
+import { Authenticate, Signout, Signup } from '@/apiclient/apiclient'
+import { UserSignupData } from '@/models/AuthResource'
 import State from '@/models/State'
 import { getAuthCookie, removeCookie, setAuthDataCookie } from '@/storageClient/storageclient'
 import { CancelTokenSource } from 'axios'
@@ -54,6 +55,20 @@ export const store = createStore<State>({
         profile_photo_filename: authData?.profile_photo_filename
       })
     },
+    async signup(
+      { commit },
+      userData: UserSignupData,
+      cancelToken: CancelTokenSource | undefined | null = null
+    ) {
+      var result = await Signup(userData, cancelToken)
+      setAuthDataCookie({ username: result?.username, token: result?.token, fullName: result?.fullName, profile_photo_filename: result?.profile_photo_filename })
+      commit('LOGIN', {
+        username: result.username,
+        token: result.token,
+        fullName: result?.fullName,
+        profile_photo_filename: result?.profile_photo_filename
+      })
+    },
     async signin(
       { commit },
       credentials: AuthResource,
@@ -69,13 +84,13 @@ export const store = createStore<State>({
       })
     },
     async signout({ commit }, cancelToken: CancelTokenSource | undefined | null = null) {
+      commit('LOGOUT')
       try {
         await Signout(cancelToken)
+        removeCookie('authData')
       } catch (error) {
         /* Doesn't really matter tbh. We can change this back one API is up */
       }
-      removeCookie('authData')
-      commit('LOGOUT')
     }
   }
 })

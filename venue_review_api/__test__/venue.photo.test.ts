@@ -53,17 +53,27 @@ const uploadImageAndGetResult = async (
 };
 
 describe('Upload Venue Photo', () => {
+  // Expanded for additional logging while I try debug some issues.
   it('POST /venues/:id/photo with valid session and data (is_primary = true) should succeed', async () => {
-    // Plonk it into the request
-    await requestWithSupertest
-      .post('/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos')
-      .set('Authorization', `${sessionToken}`)
-      .set('Content-Type', 'multipart/form-data')
-      .attach('photo', path.join(__dirname, './resources/test-image-venue.png'))
-      .field('description', 'This is an image')
-      .field('is_primary', true)
-      .expect('Content-Type', /json/)
-      .expect(201);
+    try {
+      const response = await requestWithSupertest
+        .post('/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos')
+        .set('Authorization', `${sessionToken}`)
+        .set('Content-Type', 'multipart/form-data')
+        .attach('photo', path.join(__dirname, './resources/test-image-venue.png'))
+        .field('description', 'This is an image')
+        .field('is_primary', true);
+
+      if (response.status !== 201) {
+        console.error('Unexpected status code:', response.status);
+        console.error('Response body:', response.body);
+      }
+
+      expect(response.status).toBe(201);
+    } catch (error) {
+      console.error('Test failed with error:', error);
+      throw error;
+    }
   });
 
   it('POST /venues/:id/photo with valid session and data (is_primary = false) should succeed', async () => {

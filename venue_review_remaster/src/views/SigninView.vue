@@ -2,37 +2,41 @@
   <div class="signin">
     <v-card class="signInCard">
       <h1 style="margin-bottom: 2rem">Sign In</h1>
-      <v-text-field
-        label="Username or Email"
-        :rules="usernameRules"
-        hide-details="auto"
-        style="margin-bottom: 1rem"
-        v-model="credentials.username"
-      ></v-text-field>
-      <v-text-field
-        label="Password"
-        type="password"
-        :rules="passwordRules"
-        hide-details="auto"
-        style="margin-bottom: 1rem"
-        v-model="credentials.password"
-      ></v-text-field>
-      <div class="buttonContainer">
-        <v-btn v-on:click="signin()" style="width: 5rem" v-bind:disabled="loginLoading">
-          <span v-if="!loginLoading">Signin</span>
-          <semipolar-spinner
-            :animation-duration="2000"
-            :size="20"
-            :color="'#000000'"
-            v-if="loginLoading"
-          />
-        </v-btn>
-        <p style="margin-left: 1rem">
-          Don't have an account?<a class="linkText" v-on:click="this.$router.push('Signup')"
-            >Sign Up.</a
-          >
-        </p>
-      </div>
+      <v-form ref="form" @submit.prevent>
+        <v-text-field
+          v-model="credentials.username"
+          label="Username"
+          :rules="usernameRules"
+          required
+        ></v-text-field>
+
+        <v-text-field
+          v-model="credentials.password"
+          label="Password"
+          :rules="passwordRules"
+          required
+          style="margin-bottom: 1rem"
+        ></v-text-field>
+
+        <div class="buttonContainer">
+          <div style="width: 6rem">
+            <v-btn v-on:click="signin()" type="submit" block style="background-color: #55cc69" v-bind:disabled="loginLoading">
+              <p v-if="!loginLoading" style="font-weight: bold">Signin</p>
+              <semipolar-spinner
+                :animation-duration="2000"
+                :size="20"
+                :color="'#000000'"
+                v-if="loginLoading"
+              />
+            </v-btn>
+          </div>
+          <p style="margin-left: 1rem">
+            Need an account?<a class="linkText" v-on:click="this.$router.push('Signup')"
+              >Sign Up.</a
+            >
+          </p>
+        </div>
+      </v-form>
     </v-card>
   </div>
 </template>
@@ -64,17 +68,15 @@ export default {
   },
   methods: {
     signin: async function() {
-      let usernameValid = !!this.credentials.username || this.credentials.username.length >= 3
-      let passwordValid = !!this.credentials.password || this.credentials.password.length >= 8
-      if (!usernameValid || !passwordValid) {
-        notyf.error('Invalid username or password');
+      const { valid } = await this.$refs.form.validate()
+      if (!valid) {
+        notyf.error('Fix validation errors, and try again.');
         return;
       }
       this.loginLoading = true
       try {
         await this.$store.dispatch('signin', this.credentials)
-        this.credentials.username = ''
-        this.credentials.password = ''
+        this.$refs.form.reset()
         this.loginLoading = false
         this.$router.push('Home')
       } catch (err) {
@@ -93,7 +95,7 @@ export default {
   height: 100vh;
 }
 .signInCard {
-  width: 30%;
+  width: 40%;
   padding: 1rem;
 }
 .buttonContainer {
@@ -103,5 +105,6 @@ export default {
 .linkText {
   cursor: pointer;
   margin-left: 0.5rem;
+  color: #55cc69;
 }
 </style>
