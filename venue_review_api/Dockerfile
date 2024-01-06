@@ -1,5 +1,5 @@
 # Fetching the minified node image on apline linux
-FROM node:18
+FROM node:20
 # Create app directory
 WORKDIR /src/app
 # Declaring env
@@ -9,7 +9,8 @@ ENV PORT 443
 COPY package*.json ./
 RUN npm ci --omit=dev
 # Bundle app source
-COPY . .
+COPY ./dist ./src/app/dist
+COPY ./production.env /src/app/.production.env
 # Exposing server port
 EXPOSE 443
 # Starting our application
