@@ -1,10 +1,18 @@
 name: Express.JS Build and Test
 
 on:
+  workflow_dispatch:
+    inputs:
+      name:
+        default: "Manual Trigger"
   push:
     branches: [ main ]
+    paths:
+      - 'venue_review_api/**'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'venue_review_api/**'
 
 env:
   REGISTRY: us-central1-docker.pkg.dev
