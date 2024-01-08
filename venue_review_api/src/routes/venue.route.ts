@@ -86,7 +86,7 @@ const validateQueryParams = [
       }
       return false;
     })
-    .withMessage('Maxcimum cost rating must be a number between 0 and 5.'),
+    .withMessage('Maximum cost rating must be a number between 0 and 5.'),
   query('limit')
     .isInt({ min: 10 })
     .withMessage(

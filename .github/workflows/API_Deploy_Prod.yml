@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       name:
+        description: 'Name for manual trigger'
+        required: true
         default: "Manual Trigger"
   push:
     branches: [ main ]

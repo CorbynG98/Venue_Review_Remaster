@@ -33,6 +33,7 @@
 
         <v-text-field
           v-model="userData.password"
+          type="password"
           label="Password"
           :rules="passwordRules"
           required
@@ -40,6 +41,7 @@
 
         <v-text-field
           v-model="confirmPassword"
+          type="password"
           label="Confirm Password"
           :rules="confirmPasswordRules()"
           style="margin-bottom: 1rem"

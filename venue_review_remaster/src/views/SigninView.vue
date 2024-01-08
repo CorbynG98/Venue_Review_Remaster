@@ -12,6 +12,7 @@
 
         <v-text-field
           v-model="credentials.password"
+          type="password"
           label="Password"
           :rules="passwordRules"
           required

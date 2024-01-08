@@ -47,7 +47,6 @@ export const store = createStore<State>({
   actions: {
     async initBaseData({ commit }) {
       const authData = await getAuthCookie()
-      console.log(authData)
       commit('INITDATA', {
         username: authData?.username,
         token: authData?.token,
