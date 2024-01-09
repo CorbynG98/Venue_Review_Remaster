@@ -92,9 +92,13 @@
         </td>
       </template>
     </v-data-table-virtual>
-    <div style="display: flex; justify-content: flex-end; padding: 1rem; border: none">
-      <p style="color: white">Custom footer for pagination</p>
-    </div>
+    <CustomPaginationComponent
+      :page="queryParams.page"
+      :page-size="queryParams.limit"
+      :item-count="venues.length"
+      @update-page="updatePageData"
+      @update-pageSize="updatePageSizeData"
+    />
   </div>
 </template>
 
@@ -104,10 +108,11 @@ import { debounce } from 'lodash'
 import StarRating from 'vue-star-rating'
 import { GetCategories, GetVenues, VenueQueryParams } from '../apiclient/clients/venues_client'
 import notyf from '../components/NotyfComponent'
+import CustomPaginationComponent from '../components/PaginationComponent.vue'
 import { CategoryeResource } from '../models/CategoryResource'
 import { VenueSummaryResource } from '../models/VenueResource'
 export default {
-  components: { SemipolarSpinner, StarRating },
+  components: { SemipolarSpinner, StarRating, CustomPaginationComponent },
   data: () => ({
     headers: [
       { title: 'Image', align: 'start', key: 'primary_photo', sortable: false },
@@ -215,6 +220,16 @@ export default {
         return 'Unknown'
       }
       return category.category_name
+    },
+    updatePageData(page: string) {
+      this.queryParams.page = parseInt(page)
+    },
+    updatePageSizeData(pageSize: string) {
+      this.queryParams = {
+        ...this.queryParams,
+        limit: parseInt(pageSize),
+        page: 1
+      }
     },
     getCategories: async function () {
       this.categoriesLoading = true
