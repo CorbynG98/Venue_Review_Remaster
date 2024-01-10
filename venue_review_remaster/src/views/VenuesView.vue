@@ -81,6 +81,16 @@
           ></star-rating>
         </td>
       </template>
+      <template v-slot:[`item.avg_cost_rating`]="{ item }">
+        <td>
+          {{ getDollarSigns(item.avg_cost_rating) }}
+        </td>
+      </template>
+      <template v-slot:[`item.distance`]="{ item }">
+        <td>
+          {{ getReadableDistance(item.distance) }}
+        </td>
+      </template>
       <template v-slot:[`item.category_id`]="{ item }">
         <td>
           {{ getCategoryName(item.category_id) }}
@@ -111,6 +121,7 @@ import notyf from '../components/NotyfComponent'
 import CustomPaginationComponent from '../components/PaginationComponent.vue'
 import { CategoryeResource } from '../models/CategoryResource'
 import { VenueSummaryResource } from '../models/VenueResource'
+
 export default {
   components: { SemipolarSpinner, StarRating, CustomPaginationComponent },
   data: () => ({
@@ -125,20 +136,10 @@ export default {
         title: 'Cost Rating',
         align: 'start',
         key: 'avg_cost_rating',
-        sortable: false,
-        value: (item) => {
-          if (
-            item.avg_cost_rating === null ||
-            item.avg_cost_rating === undefined ||
-            parseInt(item.avg_cost_rating) === 0
-          ) {
-            return 'Free'
-          }
-          return '$'.repeat(parseInt(item.avg_cost_rating))
-        }
+        sortable: false
       },
       { title: 'Actions', align: 'start', key: 'actions', sortable: false }
-    ],
+    ] as ReadonlyArray<unknown>,
     venues: [] as VenueSummaryResource[],
     categories: [] as CategoryeResource[],
     queryParams: {
@@ -205,13 +206,13 @@ export default {
       }
       return parseFloat(parseFloat(ratingRaw).toFixed(2))
     },
-    getDollarSigns(costRating: string) {
-      if (costRating === null || costRating === undefined || parseInt(costRating) === 0) {
-        return '$$'
+    getDollarSigns(costRating: number) {
+      if (costRating === null || costRating === undefined || costRating === 0) {
+        return 'Free'
       }
-      return '$'.repeat(parseInt(costRating))
+      return '$'.repeat(costRating)
     },
-    getCategoryName(categoryId: number) {
+    getCategoryName(categoryId: string) {
       if (categoryId === null || categoryId === undefined) {
         return 'Unknown'
       }
@@ -220,6 +221,13 @@ export default {
         return 'Unknown'
       }
       return category.category_name
+    },
+    getReadableDistance(distance: number) {
+      if (distance === null || distance === undefined) {
+        return 'Unknown'
+      }
+      if (distance <= 1) return (distance * 1000).toFixed(0) + 'm'
+      return distance.toFixed(2) + 'km'
     },
     updatePageData(page: string) {
       this.queryParams.page = parseInt(page)
@@ -260,14 +268,7 @@ export default {
               title: 'Distance',
               align: 'start',
               key: 'distance',
-              sortable: false,
-              value: (item) => {
-                if (item.distance === null || item.distance === undefined) {
-                  return 'Unknown'
-                }
-                if (item <= 1) return (item.distance * 1000).toFixed(0) + 'm'
-                return item.distance.toFixed(2) + 'km'
-              }
+              sortable: false
             })
           } else {
             // Double check the distance header is there first
