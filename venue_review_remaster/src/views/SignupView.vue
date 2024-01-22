@@ -66,7 +66,7 @@
             </v-btn>
           </div>
           <p style="margin-left: 1rem">
-            Already have an account?<a class="linkText" v-on:click="this.$router.push('Signin')"
+            Already have an account?<a class="linkText" v-on:click="this.$router.push('/Signin')"
               >Sign In.</a
             >
           </p>
@@ -112,7 +112,7 @@ export default {
   }),
   mounted: function () {
     if (this.$store.state.isLoggedIn) {
-      this.$router.push('Home')
+      this.$router.push('/Home')
     }
   },
   computed: {
@@ -135,7 +135,7 @@ export default {
         await this.$store.dispatch('signup', this.userData)
         this.$refs.form.reset()
         this.signupLoading = false
-        this.$router.push('Home')
+        this.$router.push('/Home')
       } catch (err) {
         this.signupLoading = false
       }

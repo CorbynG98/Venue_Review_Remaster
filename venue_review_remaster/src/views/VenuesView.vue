@@ -59,6 +59,7 @@
       item-value="name"
       theme="dark"
       :loading="venuesLoading || categoriesLoading"
+      @click:row="rowClickevent"
     >
       <template v-slot:[`item.primary_photo`]="{ item }">
         <td>
@@ -181,6 +182,9 @@ export default {
     }
   },
   methods: {
+    rowClickevent(event: any, data: { item: { venue_id: any } }) {
+      this.$router.push(`/Venues/${data.item.venue_id}`, () => {}, { replace: true });
+    },
     customLabel(option) {
       return `${option.library} - ${option.language}`
     },
@@ -247,8 +251,9 @@ export default {
           this.categoriesLoading = false
         })
         .catch((err) => {
-          notyf.error(err)
           this.categoriesLoading = false
+          if (err == 'Network error') return; // We handle this error type globally
+          notyf.error(err)
         })
     },
     getVenues: async function () {
@@ -278,8 +283,9 @@ export default {
           this.venuesLoading = false
         })
         .catch((err) => {
-          notyf.error(err)
           this.venuesLoading = false
+          if (err == 'Network error') return; // We handle this error type globally
+          notyf.error(err)
         })
     }
   }

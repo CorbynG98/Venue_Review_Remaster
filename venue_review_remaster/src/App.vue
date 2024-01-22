@@ -5,7 +5,7 @@ export default {
   },
   methods: {
     goToPage(page: string) {
-      this.$router.push(page)
+      this.$router.push(`/${page}`, () => {}, { replace: true })
     }
   }
 }
