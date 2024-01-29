@@ -32,7 +32,6 @@ const createReview = async (req: Request, res: Response) => {
 
   // Check if this user can write a review
   try {
-    console.log('user_id: ' + user_id + ' venue_id: ' + req.params.id);
     let review_check = await check_reviewer(user_id, req.params.id);
     if (!review_check) {
       return res.status(403).json({
