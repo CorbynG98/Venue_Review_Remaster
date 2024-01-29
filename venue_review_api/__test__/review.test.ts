@@ -1,6 +1,9 @@
+import crypto from 'crypto';
 import supertest from 'supertest';
-import { createPool } from '../src/config/db';
+import * as db from '../src/config/db';
 import server from '../src/config/express';
+import { thewok_reviews_mock } from './mocks/review_mocks';
+import { bobby1_session_mock } from './mocks/session_mocks';
 
 const requestWithSupertest = supertest(server);
 
@@ -9,19 +12,37 @@ if (process.env.NODE_ENV !== 'test') {
   throw new Error('ENVIRONMENT NOT SET TO TEST. FAILING WITH ERROR.');
 }
 
-beforeAll(async () => {
-  await createPool();
-  await authenticateUser();
-});
+const sessionToken: string = 'random_session_token';
+const hashedSessionToken: string = crypto
+  .createHash('sha512')
+  .update(sessionToken)
+  .digest('hex');
 
-var sessionToken: string = '';
-const authenticateUser = async () => {
-  const response = await requestWithSupertest
-    .post('/auth/signin')
-    .send({ username: 'bobby1', password: 'password' })
-    .set('Accept', 'application/json');
-  sessionToken = response.body.token;
-};
+beforeAll(async () => {
+  jest.spyOn(db, 'poolQuery').mockImplementation((sql, params) => {
+    return new Promise((resolve, reject) => {
+      sql = sql.replace(/\n|\t/g, '').replace(/\s+/g, ' ').trim(); // Remove newlines and tabs from sql, for comparison matching only
+      if (sql.startsWith('SELECT review_author_id, username, review_body')) {
+        if (params[0] === '8b5db9ca7d6f41e398bf551230d7fc23') {
+          return resolve(thewok_reviews_mock)
+        } else if (params[0] === 'totallyInvalid') {
+          return resolve([])
+        }
+      }
+      else if (sql.startsWith('SELECT user_id FROM Session')) {
+        if (params[0] == hashedSessionToken) {
+          return resolve([bobby1_session_mock])
+        }
+      }
+      else if (sql.startsWith('SELECT (SELECT CASE WHEN (SELECT review_id')) {
+        console.log(params)
+        if (params[0] == 'b043f010284448e382d69571fae06808' && params[1] == 'c48a5cfd48b94ac68787a3776d6ae78d') return resolve([{ can_review: '1' }]);
+        resolve([{ can_review: '0' }]);
+      }
+      return resolve([]);
+    });
+  });
+});
 
 describe('Get Reviews', () => {
   it('GET /venues/:id/reviews with a valid id should succeed', async () => {
@@ -39,7 +60,7 @@ describe('Get Reviews', () => {
     expect(response.body[0]).toHaveProperty('time_posted');
   });
 
-  it('GET /venues/:id/reviews with an invalid id should fail', async () => {
+  it('GET /venues/:id/reviews with an invalid id should pass with 0 results', async () => {
     var response = await requestWithSupertest
       .get('/venues/totallyInvalid/reviews')
       .expect(200);

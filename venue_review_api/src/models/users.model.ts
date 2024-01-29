@@ -72,62 +72,47 @@ const createUser = async (values: string[]): Promise<void> => {
   }
 };
 
-const updateUser = (values: string[][]): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
-      `
+const updateUser = async (values: string[][]): Promise<void> => {
+  try {
+    await poolQuery(`
       UPDATE User SET
         username = ?,
         email = ?,
         given_name = ?,
         family_name = ?
       WHERE user_id = ?`,
-      values,
-      (err: QueryError | null) => {
-        if (err) return reject(err);
-        resolve();
-      },
-    );
-  });
+      values);
+    return;
+  } catch (err) {
+    throw err;
+  }
 };
 
-const getPhoto = (user_id: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
-      'SELECT profile_photo_filename FROM User WHERE user_id = ?',
-      user_id,
-      (err: QueryError | null, result: any) => {
-        if (err) return reject(err);
-        resolve(result[0].profile_photo_filename);
-      },
-    );
-  });
+const getPhoto = async (user_id: string): Promise<string> => {
+  try {
+    let result = await poolQuery('SELECT profile_photo_filename FROM User WHERE user_id = ?', [user_id]) as { profile_photo_filename: string }[];
+    return result[0].profile_photo_filename;
+  } catch (err) {
+    throw err;
+  }
 };
 
-const uploadPhoto = (values: (string | null)[]): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
-      'UPDATE User SET profile_photo_filename = ? WHERE user_id = ?',
-      values,
-      (err: QueryError | null) => {
-        if (err) return reject(err);
-        return resolve();
-      },
-    );
-  });
+const uploadPhoto = async (values: (string | null)[]): Promise<void> => {
+  try {
+    await poolQuery('UPDATE User SET profile_photo_filename = ? WHERE user_id = ?', values);
+    return;
+  } catch (err) {
+    throw err;
+  }
 };
 
-const removePhoto = (user_id: string): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
-      'UPDATE User SET profile_photo_filename = NULL WHERE user_id = ?',
-      user_id,
-      (err: QueryError | null) => {
-        if (err) return reject(err);
-        return resolve();
-      },
-    );
-  });
+const removePhoto = async (user_id: string): Promise<void> => {
+  try {
+    await poolQuery('UPDATE User SET profile_photo_filename = NULL WHERE user_id = ?', [user_id]);
+    return;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export {

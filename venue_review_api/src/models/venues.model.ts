@@ -1,5 +1,4 @@
-import { QueryError } from 'mysql2';
-import { getPool } from '../config/db';
+import { poolQuery } from '../config/db';
 
 export default interface VenueSummaryResource {
   venue_id: string;
@@ -38,14 +37,13 @@ interface VenuePhotoResource {
   is_primary: boolean;
 }
 
-const getVenues = (
+const getVenues = async (
   values: (string | Number)[],
   where_conditions: string[],
   order_condition: string,
 ): Promise<VenueSummaryResource[]> => {
-  // values = [lat, lat, long, where_conditions, cost, cost, star, star, order, limit, offset]
-  return new Promise((resolve, reject) => {
-    getPool().query(
+  try {
+    let result = await poolQuery(
       `
       SELECT 
         v.venue_id,
@@ -72,30 +70,28 @@ const getVenues = (
       LIMIT ?
       OFFSET ?`,
       values,
-      (err: QueryError | null, result: any) => {
-        if (err) return reject(err);
-        resolve(result);
-      },
-    );
-  });
+    ) as VenueSummaryResource[];
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
-const createVenue = (values: string[]): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
+const createVenue = async (values: string[]): Promise<void> => {
+  try {
+    await poolQuery(
       'INSERT INTO Venue (venue_id, venue_name, category_id, city, short_description, long_description, address, latitude, longitude, admin_id, date_added) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       values,
-      (err: QueryError | null) => {
-        if (err) return reject(err);
-        resolve();
-      },
     );
-  });
+    return;
+  } catch (err) {
+    throw err;
+  }
 };
 
-const getVenueById = (values: string): Promise<VenueResource | null> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
+const getVenueById = async (values: string): Promise<VenueResource | null> => {
+  try {
+    let result = await poolQuery(
       `
       SELECT
         v.venue_name,
@@ -119,29 +115,28 @@ const getVenueById = (values: string): Promise<VenueResource | null> => {
       WHERE v.venue_id = ?
       GROUP BY v.venue_id;`,
       values,
-      (err: QueryError | null, result: any) => {
-        if (err) return reject(err);
-        if (result.length == 0) return resolve(null);
-        // Do some processing on the photos object, to format it nicely
-        result[0].photos = result[0].photos.split('[]').map((photo: string) => {
-          const [photo_filename, photo_description, is_primary] =
-            photo.split('^');
-          let is_primary_bool = is_primary == '1' ? true : false;
-          return {
-            photo_filename,
-            photo_description,
-            is_primary_bool,
-          };
-        });
-        resolve(result[0]);
-      },
-    );
-  });
+    ) as any;
+    if (result.length == 0) return null;
+    // Do some processing on the photos object, to format it nicely
+    result[0].photos = result[0].photos.split('[]').map((photo: string) => {
+      const [photo_filename, photo_description, is_primary] =
+        photo.split('^');
+      let is_primary_bool = is_primary == '1' ? true : false;
+      return {
+        photo_filename,
+        photo_description,
+        is_primary_bool,
+      };
+    });
+    return result[0];
+  } catch (err) {
+    throw err;
+  }
 };
 
-const updateVenue = (values: string[]): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
+const updateVenue = async (values: string[]): Promise<void> => {
+  try {
+    await poolQuery(
       `
       UPDATE Venue SET
         venue_name = ?,
@@ -154,12 +149,12 @@ const updateVenue = (values: string[]): Promise<void> => {
         longitude = ?
       WHERE venue_id = ?`,
       values,
-      (err: QueryError | null) => {
-        if (err) return reject(err);
-        resolve();
-      },
     );
-  });
+    return;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export { createVenue, getVenueById, getVenues, updateVenue };
+

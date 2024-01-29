@@ -1,5 +1,4 @@
-import { QueryError } from 'mysql2';
-import { getPool } from '../config/db';
+import { poolQuery } from '../config/db';
 
 export default interface VenueCategoryResource {
   category_id: string;
@@ -7,30 +6,29 @@ export default interface VenueCategoryResource {
   category_description: string;
 }
 
-const getCategories = (): Promise<VenueCategoryResource[]> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
+const getCategories = async (): Promise<VenueCategoryResource[]> => {
+  try {
+    let result = await poolQuery(
       'SELECT category_id, category_name, category_description FROM VenueCategory',
-      null,
-      (err: QueryError | null, result: any) => {
-        if (err) return reject(err);
-        resolve(result);
-      },
-    );
-  });
+      null
+    ) as VenueCategoryResource[];
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
-const doesCategoryExist = (category_id: string): Promise<boolean> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
+const doesCategoryExist = async (category_id: string): Promise<boolean> => {
+  try {
+    let result = await poolQuery(
       'SELECT category_id FROM VenueCategory WHERE category_id = ?',
-      category_id,
-      (err: QueryError | null, result: any) => {
-        if (err) return reject(err);
-        resolve(result.length == 1);
-      },
-    );
-  });
+      [category_id],
+    ) as { category_id: string }[];
+    return result.length == 1;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export { doesCategoryExist, getCategories };
+

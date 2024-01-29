@@ -3,6 +3,7 @@ import path from 'path';
 import supertest from 'supertest';
 import { createPool } from '../src/config/db';
 import server from '../src/config/express';
+import * as storage from '../src/util/google_cloud_storage.helper';
 
 const requestWithSupertest = supertest(server);
 
@@ -21,6 +22,16 @@ beforeAll(async () => {
     path.join(__dirname, './resources/test-image-venue.png'),
     'mock content',
   );
+  jest.spyOn(storage, 'uploadFile').mockImplementation((file) => {
+    return new Promise((resolve, reject) => {
+      return resolve('https://storage.googleapis.com/venuereview/1234');
+    });
+  });
+  jest.spyOn(storage, 'removeFile').mockImplementation(() => {
+    return new Promise((resolve, reject) => {
+      return resolve();
+    });
+  });
 });
 
 afterAll(() => {

@@ -1,5 +1,4 @@
-import { QueryError } from 'mysql2';
-import { getPool, poolQuery } from '../config/db';
+import { poolQuery } from '../config/db';
 
 export default interface SessionResource {
   token: string;
@@ -9,7 +8,7 @@ export default interface SessionResource {
 
 const createSession = async (values: (string | Date | null)[]): Promise<void> => {
   try {
-    var result = await poolQuery('INSERT INTO Session (session_id, token, created_at, expiry, user_id) VALUES (?, ?, ?, ?, ?)', values);
+    await poolQuery('INSERT INTO Session (session_id, token, created_at, expiry, user_id) VALUES (?, ?, ?, ?, ?)', values);
     return;
   } catch (err) {
     throw err;
@@ -18,7 +17,7 @@ const createSession = async (values: (string | Date | null)[]): Promise<void> =>
 
 const getByToken = async (token: string): Promise<string | null> => {
   try {
-    var result = await poolQuery('SELECT user_id FROM Session WHERE token = ? LIMIT 1', [token]) as SessionResource[];
+    let result = await poolQuery('SELECT user_id FROM Session WHERE token = ? LIMIT 1', [token]) as SessionResource[];
     if (result == null || result.length != 1) throw new Error('Invalid token.');
     return result[0].user_id;
   } catch (err) {
@@ -35,22 +34,16 @@ const removeSession = async (token: string): Promise<void> => {
   }
 };
 
-const verifyVenueAuth = (
+const verifyVenueAuth = async (
   user_id: string,
   venue_id: string,
 ): Promise<boolean> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
-      'SELECT venue_id FROM Venue WHERE admin_id = ? AND venue_id = ?',
-      [user_id, venue_id],
-      (err: QueryError | null, result: any) => {
-        if (err) return reject(err);
-        if (result == '' || result == null || result.length == 0)
-          return reject(null);
-        return resolve(true);
-      },
-    );
-  });
+  try {
+    let result = await poolQuery('SELECT venue_id FROM Venue WHERE admin_id = ? AND venue_id = ?', [user_id, venue_id]) as { venue_id: string }[];
+    return result.length == 1;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export { createSession, getByToken, removeSession, verifyVenueAuth };

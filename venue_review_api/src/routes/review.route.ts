@@ -3,7 +3,6 @@ import { check } from 'express-validator';
 import {
   createReview,
   getReviews,
-  getUserReviews,
 } from '../controllers/review.controller';
 import authenticate from '../util/user_authenticate.middleware';
 
@@ -24,8 +23,6 @@ const user_routes = (app: Express) => {
     .route('/venues/:id/reviews')
     .get(getReviews)
     .post([...validateReviewData, authenticate], createReview);
-
-  app.route('/users/:id/reviews').get(authenticate, getUserReviews);
 };
 
 export default user_routes;

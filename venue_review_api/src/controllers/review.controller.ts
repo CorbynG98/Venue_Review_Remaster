@@ -19,10 +19,6 @@ const getReviews = async (req: Request, res: Response) => {
     });
 };
 
-const getUserReviews = async (req: Request, res: Response) => {
-  throw new Error('Not implemented');
-};
-
 const createReview = async (req: Request, res: Response) => {
   const validation = validationResult(req);
   if (!validation.isEmpty()) {
@@ -36,16 +32,17 @@ const createReview = async (req: Request, res: Response) => {
 
   // Check if this user can write a review
   try {
+    console.log('user_id: ' + user_id + ' venue_id: ' + req.params.id);
     let review_check = await check_reviewer(user_id, req.params.id);
     if (!review_check) {
-      res.status(403).json({
+      return res.status(403).json({
         status: 403,
         message: 'You cannot write a review for this venue.',
       });
-      return;
     }
   } catch (err) {
-    res.status(500).json({ status: 500, message: err });
+    console.log(err);
+    return res.status(500).json({ status: 500, message: err });
   }
   let values = [
     uuidv4().replace(/-/g, ''),
@@ -58,12 +55,13 @@ const createReview = async (req: Request, res: Response) => {
   ];
   create_review(values)
     .then(() => {
-      res.status(201).json({ status: 201, message: 'Created' });
+      return res.status(201).json({ status: 201, message: 'Created' });
     })
     .catch((err) => {
-      res.status(500).json({ status: 500, message: err?.code ?? err });
+      console.log(err);
+      return res.status(500).json({ status: 500, message: err?.code ?? err });
     });
 };
 
-export { createReview, getReviews, getUserReviews };
+export { createReview, getReviews };
 

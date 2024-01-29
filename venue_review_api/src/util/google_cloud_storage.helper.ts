@@ -16,10 +16,6 @@ export const uploadFile = async (
   bucketName: string,
 ): Promise<string | null> => {
   return new Promise(async (resolve, reject) => {
-    if (isTest) {
-      return resolve(fileName); // On test mode, don't actually call google. Just mimic a success
-    }
-
     // Make sure the bucket we are trying to interact with exists
     try {
       await storage.createBucket(bucketName);
@@ -34,7 +30,7 @@ export const uploadFile = async (
     const file = bucket.file(fileName);
 
     file.save(fileBuffer).then(() => {
-      file.metadata.mediaLink ?? null;
+      resolve(file.metadata.mediaLink ?? null);
     })
       .catch((err) => {
         reject(err);
