@@ -71,6 +71,7 @@ const login = async (req: Request, res: Response) => {
       });
     });
   } catch (err) {
+    console.error("err", err)
     res.status(500).json({ status: 500, message: err });
   }
 };
@@ -79,6 +80,19 @@ const create = async (req: Request, res: Response) => {
   const validation = validationResult(req);
   if (!validation.isEmpty()) {
     return res.status(400).json({ errors: validation.array() });
+  }
+
+  let user = await get_user_by_email(req.body.email);
+  // Check email, if different to one currently used.
+  if (user != null) {
+    res.status(400).json({ status: 400, message: 'Email already in use.' });
+    return;
+  }
+  user = await get_user_by_username(req.body.username);
+  // Check email, if different to one currently used.
+  if (user != null) {
+    res.status(400).json({ status: 400, message: 'Username already in use.' });
+    return;
   }
 
   let user_id = uuidv4().replace(/-/g, '');
@@ -154,3 +168,4 @@ const signout = async (req: Request, res: Response) => {
 };
 
 export { create, login, signout };
+

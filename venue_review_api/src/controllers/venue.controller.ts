@@ -156,7 +156,7 @@ const createVenue = async (req: Request, res: Response) => {
   // We know it's valid at this point, and can trust the process.
   let token = req.header('Authorization')?.toString() ?? '';
   let hashedToken = crypto.createHash('sha512').update(token).digest('hex');
-  let user_id = await get_session_by_token(hashedToken);
+  let user_id = await get_session_by_token(hashedToken) as string;
 
   let values = [
     uuidv4().replace(/-/g, ''),

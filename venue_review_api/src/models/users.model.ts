@@ -1,5 +1,5 @@
 import { QueryError } from 'mysql2';
-import { getPool } from '../config/db';
+import { getPool, poolQuery } from '../config/db';
 
 export default interface UserResource {
   user_id: string;
@@ -35,51 +35,41 @@ const getUsernameEmailById = (
   });
 };
 
-const getUserByEmail = (
+const getUserByEmail = async (
   email: string,
 ): Promise<UserIdPasswordResource | null> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
-      'SELECT user_id, password, given_name, family_name, profile_photo_filename FROM User WHERE email = ? LIMIT 1',
-      email,
-      (err: QueryError | null, result: any) => {
-        if (err) return reject(err);
-        if (result == '' || result == null || result.length == 0)
-          return resolve(null);
-        resolve(result[0]);
-      },
-    );
-  });
+  try {
+    const result = await poolQuery('SELECT user_id, password, given_name, family_name, profile_photo_filename FROM User WHERE email = ? LIMIT 1', [email]) as UserIdPasswordResource[];
+    if (result == null || result.length == 0) {
+      return null;
+    }
+    return result[0];
+  } catch (err) {
+    throw err;
+  }
 };
 
-const getUserByUsername = (
+const getUserByUsername = async (
   username: string,
 ): Promise<UserIdPasswordResource | null> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
-      'SELECT user_id, password, given_name, family_name, profile_photo_filename FROM User WHERE username = ? LIMIT 1',
-      username,
-      (err: QueryError | null, result: any) => {
-        if (err) return reject(err);
-        if (result == '' || result == null || result.length == 0)
-          return resolve(null);
-        resolve(result[0]);
-      },
-    );
-  });
+  try {
+    const result = await poolQuery('SELECT user_id, password, given_name, family_name, profile_photo_filename FROM User WHERE username = ? LIMIT 1', [username]) as UserIdPasswordResource[];
+    if (result == null || result.length == 0) {
+      return null;
+    }
+    return result[0];
+  } catch (err) {
+    throw err;
+  }
 };
 
-const createUser = (values: string[]): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
-      'INSERT INTO User (user_id, username, email, given_name, family_name, password) VALUES (?, ?, ?, ?, ?, ?)',
-      values,
-      (err: QueryError | null) => {
-        if (err) return reject(err);
-        resolve();
-      },
-    );
-  });
+const createUser = async (values: string[]): Promise<void> => {
+  try {
+    await poolQuery('INSERT INTO User (user_id, username, email, given_name, family_name, password) VALUES (?, ?, ?, ?, ?, ?)', values);
+    return;
+  } catch (err) {
+    throw err;
+  }
 };
 
 const updateUser = (values: string[][]): Promise<void> => {
@@ -148,5 +138,6 @@ export {
   getUsernameEmailById,
   removePhoto,
   updateUser,
-  uploadPhoto,
+  uploadPhoto
 };
+

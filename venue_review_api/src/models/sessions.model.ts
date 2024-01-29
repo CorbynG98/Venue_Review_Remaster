@@ -1,5 +1,5 @@
 import { QueryError } from 'mysql2';
-import { getPool } from '../config/db';
+import { getPool, poolQuery } from '../config/db';
 
 export default interface SessionResource {
   token: string;
@@ -7,45 +7,32 @@ export default interface SessionResource {
   user_id: string;
 }
 
-const createSession = (values: (string | Date | null)[]): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
-      'INSERT INTO Session (session_id, token, created_at, expiry, user_id) VALUES (?, ?, ?, ?, ?)',
-      values,
-      (err: QueryError | null) => {
-        if (err) return reject(err);
-        resolve();
-      },
-    );
-  });
+const createSession = async (values: (string | Date | null)[]): Promise<void> => {
+  try {
+    var result = await poolQuery('INSERT INTO Session (session_id, token, created_at, expiry, user_id) VALUES (?, ?, ?, ?, ?)', values);
+    return;
+  } catch (err) {
+    throw err;
+  }
 };
 
-const getByToken = (token: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
-      'SELECT user_id FROM Session WHERE token = ? LIMIT 1',
-      token,
-      (err: QueryError | null, result: any) => {
-        if (err) return reject(err);
-        if (result == '' || result == null || result.length == 0)
-          return reject(null);
-        return resolve(result[0].user_id as string);
-      },
-    );
-  });
+const getByToken = async (token: string): Promise<string | null> => {
+  try {
+    var result = await poolQuery('SELECT user_id FROM Session WHERE token = ? LIMIT 1', [token]) as SessionResource[];
+    if (result == null || result.length != 1) throw new Error('Invalid token.');
+    return result[0].user_id;
+  } catch (err) {
+    throw new Error('Invalid token.');
+  }
 };
 
-const removeSession = (token: string): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
-      'DELETE FROM Session WHERE token = ?',
-      token,
-      (err: QueryError | null) => {
-        if (err) return reject(err);
-        resolve();
-      },
-    );
-  });
+const removeSession = async (token: string): Promise<void> => {
+  try {
+    await poolQuery('DELETE FROM Session WHERE token = ?', [token]);
+    return;
+  } catch (err) {
+    throw err;
+  }
 };
 
 const verifyVenueAuth = (
@@ -67,3 +54,4 @@ const verifyVenueAuth = (
 };
 
 export { createSession, getByToken, removeSession, verifyVenueAuth };
+

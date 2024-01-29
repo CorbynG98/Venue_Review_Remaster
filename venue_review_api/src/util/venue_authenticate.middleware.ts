@@ -24,7 +24,7 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
   let hashedToked = crypto.createHash('sha512').update(token).digest('hex');
   get_by_token(hashedToked)
     .then((result) => {
-      verify_venue_auth(result, venue_id)
+      verify_venue_auth(result as string, venue_id)
         .then(() => {
           next();
         })

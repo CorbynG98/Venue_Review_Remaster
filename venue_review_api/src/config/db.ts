@@ -1,4 +1,5 @@
 import mysql from 'mysql2';
+import { promisify } from 'util';
 
 let pool: mysql.Pool;
 
@@ -16,4 +17,7 @@ const getPool = () => {
   return pool;
 };
 
+export const poolQuery = promisify((query: any, params: any, callback: any) => getPool().query(query, params, callback));
+
 export { createPool, getPool };
+

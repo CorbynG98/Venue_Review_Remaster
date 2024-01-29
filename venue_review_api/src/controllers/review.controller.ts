@@ -32,7 +32,7 @@ const createReview = async (req: Request, res: Response) => {
   // Get the user_id from their token
   let token = req.header('Authorization')?.toString() ?? '';
   let hashedToken = crypto.createHash('sha512').update(token).digest('hex');
-  let user_id = await get_session_by_token(hashedToken);
+  let user_id = await get_session_by_token(hashedToken) as string;
 
   // Check if this user can write a review
   try {
@@ -66,3 +66,4 @@ const createReview = async (req: Request, res: Response) => {
 };
 
 export { createReview, getReviews, getUserReviews };
+

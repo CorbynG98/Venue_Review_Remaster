@@ -1,6 +1,11 @@
+import crypto from 'crypto';
 import supertest from 'supertest';
-import { createPool } from '../src/config/db';
+import * as db from '../src/config/db';
 import server from '../src/config/express';
+// Import mocks from user_mocks.ts file
+import { bobby1_mock } from './mocks//user_mocks';
+import { bobby1_session_mock } from './mocks/session_mocks';
+
 
 const requestWithSupertest = supertest(server);
 
@@ -9,19 +14,34 @@ if (process.env.NODE_ENV !== 'test') {
   throw new Error('ENVIRONMENT NOT SET TO TEST. FAILING WITH ERROR.');
 }
 
-beforeAll(async () => {
-  await createPool();
-  await authenticateUser();
-});
+const sessionToken: string = 'random_session_token';
+const hashedSessionToken: string = crypto
+  .createHash('sha512')
+  .update(sessionToken)
+  .digest('hex');
 
-var sessionToken: string = '';
-const authenticateUser = async () => {
-  const response = await requestWithSupertest
-    .post('/auth/signin')
-    .send({ username: 'bobby1', password: 'password' })
-    .set('Accept', 'application/json');
-  sessionToken = response.body.token;
-};
+beforeAll(async () => {
+  jest.spyOn(db, 'poolQuery').mockImplementation((sql, params) => {
+    return new Promise((resolve, reject) => {
+      if (sql.startsWith('SELECT user_id, password')) {
+        if (params[0] === 'bobby1' || params[0] == 'bob.roberts@gmail.com') {
+          return resolve([bobby1_mock])
+        }
+      }
+      else if (sql.startsWith('SELECT user_id FROM Session')) {
+        if (params[0] == hashedSessionToken) {
+          return resolve([bobby1_session_mock])
+        }
+      }
+      else if (sql.startsWith('DELETE FROM Session')) {
+        if (params[0] == hashedSessionToken) {
+          return resolve(null)
+        }
+      }
+      return resolve(null);
+    });
+  });
+});
 
 describe('User Signin', () => {
   it('POST /auth/signin with valid data (USERNAME VARIANT) should return 200 with token', async () => {
