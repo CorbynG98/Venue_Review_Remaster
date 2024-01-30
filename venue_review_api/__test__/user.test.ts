@@ -1,9 +1,12 @@
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import supertest from 'supertest';
-import { createPool } from '../src/config/db';
+import * as db from '../src/config/db';
 import server from '../src/config/express';
 import * as storage from '../src/util/google_cloud_storage.helper';
+import { bobby1_session_mock } from './mocks/session_mocks';
+import { blackpanther_mock, bobby1_mock } from './mocks/user_mocks';
 
 const requestWithSupertest = supertest(server);
 
@@ -12,9 +15,37 @@ if (process.env.NODE_ENV !== 'test') {
   throw new Error('ENVIRONMENT NOT SET TO TEST. FAILING WITH ERROR.');
 }
 
+const sessionToken: string = 'random_session_token';
+const hashedSessionToken: string = crypto
+  .createHash('sha512')
+  .update(sessionToken)
+  .digest('hex');
+
 beforeAll(async () => {
-  await createPool();
-  await authenticateUser();
+  jest.spyOn(db, 'poolQuery').mockImplementation((sql, params) => {
+    return new Promise((resolve, reject) => {
+      sql = sql.replace(/\n|\t/g, '').replace(/\s+/g, ' ').trim(); // Remove newlines and tabs from sql, for comparison matching only
+      if (sql.startsWith('SELECT user_id, password') || sql.startsWith('SELECT username, email')) {
+        if (params[0] === 'black.panther' || params[0] == 'black.panther@super.heroes') {
+          return resolve([blackpanther_mock])
+        }
+        if (params[0] === 'bobby1' || params[0] == 'bob.roberts@gmail.com' || params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d') {
+          return resolve([bobby1_mock])
+        }
+      }
+      else if (sql.startsWith('SELECT user_id FROM Session')) {
+        if (params[0] == hashedSessionToken) {
+          return resolve([bobby1_session_mock])
+        }
+      }
+      else if (sql.startsWith('SELECT profile_photo_filename FROM')) {
+        if (params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d') {
+          return resolve([{ profile_photo_filename: 'testing.png' }])
+        }
+      }
+      return resolve([]);
+    });
+  });
   // Create a dummy image file
   fs.writeFileSync(
     path.join(__dirname, './resources/test-image-user.png'),
@@ -36,15 +67,6 @@ afterAll(() => {
   // Clean up the dummy image file
   fs.unlinkSync(path.join(__dirname, './resources/test-image-user.png'));
 });
-
-let sessionToken: string = '';
-const authenticateUser = async () => {
-  const response = await requestWithSupertest
-    .post('/auth/signin')
-    .send({ username: 'bobby1', password: 'password' })
-    .set('Accept', 'application/json');
-  sessionToken = response.body.token;
-};
 
 describe('Update User', () => {
   it('PATCH /users with valid session and data should succeed', async () => {
@@ -199,7 +221,7 @@ describe('Update User', () => {
       .patch('/users')
       .send({
         username: 'black.panther',
-        email: 'bob.roberts@gmail.com',
+        email: 'bob.roberts.new@gmail.com',
         given_name: 'Bobby',
         family_name: 'Robbers',
       })
@@ -213,8 +235,8 @@ describe('Update User', () => {
     await requestWithSupertest
       .patch('/users')
       .send({
-        username: 'black.panther',
-        email: 'superman@super.heroes',
+        username: 'bobby1new',
+        email: 'black.panther@super.heroes',
         given_name: 'Bobby',
         family_name: 'Robbers',
       })
@@ -223,7 +245,7 @@ describe('Update User', () => {
       .expect(400);
   });
 
-  it('PATCH /venues with valid data and an invalid session should fail', async () => {
+  it('PATCH /users with valid data and an invalid session should fail', async () => {
     // Plonk it into the request
     await requestWithSupertest
       .patch('/users')
@@ -238,7 +260,7 @@ describe('Update User', () => {
       .expect(403);
   });
 
-  it('PATCH /venues with valid data and no session should fail', async () => {
+  it('PATCH /users with valid data and no session should fail', async () => {
     // Plonk it into the request
     await requestWithSupertest
       .patch('/users')

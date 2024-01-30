@@ -35,10 +35,10 @@ beforeAll(async () => {
       }
       else if (sql.startsWith('DELETE FROM Session')) {
         if (params[0] == hashedSessionToken) {
-          return resolve(null)
+          return resolve([])
         }
       }
-      return resolve(null);
+      return resolve([]);
     });
   });
 });

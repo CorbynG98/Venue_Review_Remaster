@@ -1,5 +1,4 @@
-import { QueryError } from 'mysql2';
-import { getPool, poolQuery } from '../config/db';
+import { poolQuery } from '../config/db';
 
 export default interface UserResource {
   user_id: string;
@@ -18,21 +17,19 @@ interface UserIdPasswordResource {
   profile_photo_filename: string;
 }
 
-const getUsernameEmailById = (
+const getUsernameEmailById = async (
   user_id: string,
 ): Promise<UserResource | null> => {
-  return new Promise((resolve, reject) => {
-    getPool().query(
-      'SELECT username, email FROM User WHERE user_id = ?',
-      user_id,
-      (err: QueryError | null, result: any) => {
-        if (err) return reject(err);
-        if (result == '' || result == null || result.length == 0)
-          return resolve(null);
-        resolve(result[0]);
-      },
-    );
-  });
+  try {
+    const result = await poolQuery(
+      'SELECT username, email FROM User WHERE user_id = ?', [user_id]) as UserResource[];
+    if (result == null || result.length == 0) {
+      return null;
+    }
+    return result[0];
+  } catch (err) {
+    throw err;
+  }
 };
 
 const getUserByEmail = async (

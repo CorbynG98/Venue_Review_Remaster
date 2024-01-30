@@ -35,7 +35,6 @@ beforeAll(async () => {
         }
       }
       else if (sql.startsWith('SELECT (SELECT CASE WHEN (SELECT review_id')) {
-        console.log(params)
         if (params[0] == 'b043f010284448e382d69571fae06808' && params[1] == 'c48a5cfd48b94ac68787a3776d6ae78d') return resolve([{ can_review: '1' }]);
         resolve([{ can_review: '0' }]);
       }
