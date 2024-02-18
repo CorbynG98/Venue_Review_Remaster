@@ -44,16 +44,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: 'Create env file'
-        run: |
-          rm -rf .test.env
-          touch .test.env
-          echo MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} >> .test.env
-          echo MYSQL_HOST=${{ secrets.MYSQL_HOST }} >> .test.env
-          echo MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} >> .test.env
-          echo MYSQL_USER=${{ secrets.MYSQL_USER }} >> .test.env
-          cat .test.env
-
       - run: npm ci
 
       - run: npm test

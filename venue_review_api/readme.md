@@ -24,14 +24,14 @@
    `mysql -uroot -ppassword`
 5. You should now be logged into the mysql server and have the capability to run commands such as `show databases;` as an example.
 6. Create a new database for the project<br />
-   `create database venue_review;`
+   `create database venue_review_remaster;`
 7. Create a new user<br />
-   `create user 'venue_review'@'%' identified by 'password';`
+   `create user 'venue_review_remaster'@'%' identified by 'password';`
 8. Assign the new user permissions to access the database<br />
-   `grant all privileges on venue_review.* to 'venue_review'@'%';`<br />
+   `grant all privileges on venue_review_remaster.* to 'venue_review_remaster'@'%';`<br />
    In the interest of space and time, I grant all privileges to all tables in the venue-review table. In a real situation, specifying a list of grants is much more secure and safe. Up to you to research.<br />
    - An example with more fine grained permissions could be as such, and what I use on my public databases with mysql:<br />
-     `grant select,insert,alter,delete,create,references,update on venue_review.* to 'venue_review'@'%';`
+     `grant select,insert,alter,delete,create,references,update on venue_review_remaster.* to 'venue_review_remaster'@'%';`
    - For a test user, this might also include `index`, `drop`, etc. so you have some extra functionality.
 9. Run the command `flush privileges;` to finalise the permission process. Without this command, the permissions will not be applied.
 10. `quit` out of mysql, and follow the same access command from step 4, with the new username and password. The username does not need the host (`@'[host]`)
@@ -56,14 +56,14 @@ MYSQL_DATABASE={database}
 
 `{server}` is the host, essentially. If you are running from a docker container on your current machine, this value will be `localhost` or `127.0.0.1`<br />
 `{username}` and `{passowrd}` don't need explaining. This is the credentials for the user accessing the database, likely the one made in step 7 of database configuration process. In my case, `{username} -> node, {password} -> password`<br />
-`{database}` is the database we are accessing, and likely the one created in step 6 of the database configuration process. In my case, `venue_review`<br />
+`{database}` is the database we are accessing, and likely the one created in step 6 of the database configuration process. In my case, `venue_review_remaster`<br />
 An example might look as such:
 
 ```
 MYSQL_HOST=127.0.0.1
 MYSQL_USER=node
 MYSQL_PASSWORD=password
-MYSQL_DATABASE=venue_review
+MYSQL_DATABASE=venue_review_remaster
 ```
 
 <br />
@@ -99,7 +99,7 @@ First things first, we need a database to run tests on.
 We also need some custom env variables set, in a special test version of the file.
 
 1. This is the same as the .env Configuration from above, except the file needs to be called `.test.env` in this case. If you wish to use a different env file, make sure to edit `pretest.config.ts` to specify said env file.
-2. If you use a database name different to `venue_review_test` as I do for my testing, make sure to update the sql files to match this, so the scripts run correctly on the right database.
+2. If you use a database name different to `venue_review_remaster_test` as I do for my testing, make sure to update the sql files to match this, so the scripts run correctly on the right database.
 
 ## Running
 
