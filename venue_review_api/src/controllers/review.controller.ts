@@ -40,7 +40,6 @@ const createReview = async (req: Request, res: Response) => {
       });
     }
   } catch (err) {
-    console.log(err);
     return res.status(500).json({ status: 500, message: err });
   }
   let values = [
@@ -57,7 +56,6 @@ const createReview = async (req: Request, res: Response) => {
       return res.status(201).json({ status: 201, message: 'Created' });
     })
     .catch((err) => {
-      console.log(err);
       return res.status(500).json({ status: 500, message: err?.code ?? err });
     });
 };

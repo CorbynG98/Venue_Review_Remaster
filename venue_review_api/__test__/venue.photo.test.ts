@@ -1,9 +1,12 @@
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import supertest from 'supertest';
-import { createPool } from '../src/config/db';
+import * as db from '../src/config/db';
 import server from '../src/config/express';
 import * as storage from '../src/util/google_cloud_storage.helper';
+import { bobby1_session_mock } from './mocks/session_mocks';
+import { blackpanther_mock, bobby1_mock } from './mocks/user_mocks';
 
 const requestWithSupertest = supertest(server);
 
@@ -12,11 +15,47 @@ if (process.env.NODE_ENV !== 'test') {
   throw new Error('ENVIRONMENT NOT SET TO TEST. FAILING WITH ERROR.');
 }
 
-let sessionToken: string = '';
+const sessionToken: string = 'random_session_token';
+const hashedSessionToken: string = crypto
+  .createHash('sha512')
+  .update(sessionToken)
+  .digest('hex');
+
 beforeAll(async () => {
-  await createPool();
-  // Configure session
-  sessionToken = await authenticateUser();
+  jest.spyOn(db, 'poolQuery').mockImplementation((sql, params) => {
+    return new Promise((resolve, reject) => {
+      sql = sql.replace(/\n|\t/g, '').replace(/\s+/g, ' ').trim(); // Remove newlines and tabs from sql, for comparison matching only
+      if (sql.startsWith('SELECT user_id, password') || sql.startsWith('SELECT username, email')) {
+        if (params[0] === 'black.panther' || params[0] == 'black.panther@super.heroes') {
+          return resolve([blackpanther_mock])
+        }
+        if (params[0] === 'bobby1' || params[0] == 'bob.roberts@gmail.com' || params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d') {
+          return resolve([bobby1_mock])
+        }
+      }
+      else if (sql.startsWith('SELECT user_id FROM Session')) {
+        if (params[0] == hashedSessionToken) {
+          return resolve([bobby1_session_mock])
+        }
+      }
+      else if (sql.startsWith('SELECT is_primary FROM VenuePhoto WHERE')) {
+        if (params[0] == '8b5db9ca7d6f41e398bf551230d7fc23' && params[1] == 'test-image-venue.png') {
+          return resolve([{ is_primary: 1 }])
+        }
+      }
+      else if (sql.startsWith('SELECT venue_id FROM VenuePhoto')) {
+        if (params[0] == '8b5db9ca7d6f41e398bf551230d7fc23' && params[1] == 'test-image-venue.png') {
+          return resolve([{ venue_id: '8b5db9ca7d6f41e398bf551230d7fc23' }])
+        }
+      }
+      else if (sql.startsWith('SELECT venue_id FROM Venue WHERE')) {
+        if (params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d' && params[1] == '8b5db9ca7d6f41e398bf551230d7fc23') {
+          return resolve([{ venue_id: '8b5db9ca7d6f41e398bf551230d7fc23' }])
+        }
+      }
+      return resolve([]);
+    });
+  });
   // Create a dummy image file
   fs.writeFileSync(
     path.join(__dirname, './resources/test-image-venue.png'),
@@ -38,33 +77,6 @@ afterAll(() => {
   // Clean up the dummy image file
   fs.unlinkSync(path.join(__dirname, './resources/test-image-venue.png'));
 });
-
-const authenticateUser = async () => {
-  const response = await requestWithSupertest
-    .post('/auth/signin')
-    .send({ username: 'bobby1', password: 'password' })
-    .set('Accept', 'application/json');
-  return response.body.token;
-};
-
-const uploadImageAndGetResult = async (
-  customSession: string,
-  venueId: string,
-  makePrimary: boolean,
-) => {
-  // Plonk it into the request
-  let response = await requestWithSupertest
-    .post(`/venues/${venueId}/photos`)
-    .set('Authorization', `${customSession}`)
-    .set('Content-Type', 'multipart/form-data')
-    .attach('photo', path.join(__dirname, './resources/test-image-venue.png'))
-    .field('description', 'This is an image')
-    .field('is_primary', makePrimary)
-    .expect('Content-Type', /json/)
-    .expect(201);
-
-  return response.body.message; // Should be the URL of the image.
-};
 
 describe('Upload Venue Photo', () => {
   // Expanded for additional logging while I try debug some issues.
@@ -171,12 +183,7 @@ describe('Upload Venue Photo', () => {
 
 describe('Set Venue Primary Photo', () => {
   it('POST /venues/:id/photos/:photoId/setPrimary with valid session and data should succeed', async () => {
-    // Upload an image and get the URL
-    let imageURL = await uploadImageAndGetResult(
-      sessionToken,
-      '8b5db9ca7d6f41e398bf551230d7fc23',
-      false,
-    );
+    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
       .post(
         `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}/setPrimary`,
@@ -186,27 +193,7 @@ describe('Set Venue Primary Photo', () => {
   });
 
   it('POST /venues/:id/photos/:photoId/setPrimary with valid session and data where image is already primary should succeed', async () => {
-    // Upload an image and get the URL
-    let imageURL = await uploadImageAndGetResult(
-      sessionToken,
-      '8b5db9ca7d6f41e398bf551230d7fc23',
-      true,
-    );
-    await requestWithSupertest
-      .post(
-        `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}/setPrimary`,
-      )
-      .set('Authorization', `${sessionToken}`)
-      .expect(200);
-  });
-
-  it('POST /venues/:id/photos/:photoId/setPrimary with valid session and data where image is already primary should succeed', async () => {
-    // Upload an image and get the URL
-    let imageURL = await uploadImageAndGetResult(
-      sessionToken,
-      '8b5db9ca7d6f41e398bf551230d7fc23',
-      true,
-    );
+    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
       .post(
         `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}/setPrimary`,
@@ -234,12 +221,7 @@ describe('Set Venue Primary Photo', () => {
   });
 
   it('POST /venues/:id/photos/:photoId/setPrimary with invalid session and valid image should fail', async () => {
-    // Upload an image and get the URL
-    let imageURL = await uploadImageAndGetResult(
-      sessionToken,
-      '8b5db9ca7d6f41e398bf551230d7fc23',
-      true,
-    );
+    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
       .post(
         `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}/setPrimary`,
@@ -249,12 +231,7 @@ describe('Set Venue Primary Photo', () => {
   });
 
   it('POST /venues/:id/photos/:photoId/setPrimary with invalid session and valid image should fail', async () => {
-    // Upload an image and get the URL
-    let imageURL = await uploadImageAndGetResult(
-      sessionToken,
-      '8b5db9ca7d6f41e398bf551230d7fc23',
-      true,
-    );
+    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
       .post(
         `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}/setPrimary`,
@@ -265,12 +242,7 @@ describe('Set Venue Primary Photo', () => {
 
 describe('Remove Venue Photo', () => {
   it('DELETE /venues/:id/photos/:photoId with valid session and non primary photo should succeed', async () => {
-    // Upload an image and get the URL
-    let imageURL = await uploadImageAndGetResult(
-      sessionToken,
-      '8b5db9ca7d6f41e398bf551230d7fc23',
-      false,
-    );
+    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
       .delete(`/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}`)
       .set('Authorization', `${sessionToken}`)
@@ -278,12 +250,7 @@ describe('Remove Venue Photo', () => {
   });
 
   it('DELETE /venues/:id/photos/:photoId with valid session and primary photo should succeed', async () => {
-    // Upload an image and get the URL
-    let imageURL = await uploadImageAndGetResult(
-      sessionToken,
-      '8b5db9ca7d6f41e398bf551230d7fc23',
-      true,
-    );
+    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
       .delete(`/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}`)
       .set('Authorization', `${sessionToken}`)
@@ -291,8 +258,9 @@ describe('Remove Venue Photo', () => {
   });
 
   it('DELETE /venues/:id/photos/:photoId with a valid image on an account where not admin should fail', async () => {
+    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
-      .delete(`/venues/b043f010284448e382d69571fae06808/photos/testing1.png`)
+      .delete(`/venues/b043f010284448e382d69571fae06808/photos/${imageURL}`)
       .set('Authorization', `${sessionToken}`)
       .expect(403);
   });
@@ -307,12 +275,7 @@ describe('Remove Venue Photo', () => {
   });
 
   it('DELETE /venues/:id/photos/:photoId with invalid session and valid image should fail', async () => {
-    // Upload an image and get the URL
-    let imageURL = await uploadImageAndGetResult(
-      sessionToken,
-      '8b5db9ca7d6f41e398bf551230d7fc23',
-      true,
-    );
+    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
       .delete(`/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}`)
       .set('Authorization', `superInvalid`)
@@ -320,12 +283,7 @@ describe('Remove Venue Photo', () => {
   });
 
   it('DELETE /venues/:id/photos/:photoId with invalid session and valid image should fail', async () => {
-    // Upload an image and get the URL
-    let imageURL = await uploadImageAndGetResult(
-      sessionToken,
-      '8b5db9ca7d6f41e398bf551230d7fc23',
-      true,
-    );
+    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
       .delete(`/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}`)
       .expect(401);

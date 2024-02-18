@@ -73,7 +73,7 @@ const removeVenuePhoto = async (
       'SELECT is_primary FROM VenuePhoto WHERE venue_id = ? AND photo_filename = ?',
       values,
     ) as { is_primary: string }[];
-    if (venue == null || venue.length == 0) return false;
+    if (venue == null || venue.length == 0) return null;
     // Update that venue to have a new primary
     await poolQuery(
       'DELETE FROM VenuePhoto WHERE venue_id = ? AND photo_filename = ?',

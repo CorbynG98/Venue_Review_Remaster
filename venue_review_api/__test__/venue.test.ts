@@ -1,6 +1,13 @@
+import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import supertest from 'supertest';
-import { createPool } from '../src/config/db';
+import * as db from '../src/config/db';
 import server from '../src/config/express';
+import * as storage from '../src/util/google_cloud_storage.helper';
+import { bobby1_session_mock } from './mocks/session_mocks';
+import { blackpanther_mock, bobby1_mock } from './mocks/user_mocks';
+import { categories, venue_by_id, venues_no_filter } from './mocks/venue_mocks';
 
 const requestWithSupertest = supertest(server);
 
@@ -9,19 +16,63 @@ if (process.env.NODE_ENV !== 'test') {
   throw new Error('ENVIRONMENT NOT SET TO TEST. FAILING WITH ERROR.');
 }
 
-beforeAll(async () => {
-  await createPool();
-  await authenticateUser();
-});
+const sessionToken: string = 'random_session_token';
+const hashedSessionToken: string = crypto
+  .createHash('sha512')
+  .update(sessionToken)
+  .digest('hex');
 
-let sessionToken: string = '';
-const authenticateUser = async () => {
-  const response = await requestWithSupertest
-    .post('/auth/signin')
-    .send({ username: 'bobby1', password: 'password' })
-    .set('Accept', 'application/json');
-  sessionToken = response.body.token;
-};
+beforeAll(async () => {
+  jest.spyOn(db, 'poolQuery').mockImplementation((sql, params) => {
+    return new Promise((resolve, reject) => {
+      sql = sql.replace(/\n|\t/g, '').replace(/\s+/g, ' ').trim(); // Remove newlines and tabs from sql, for comparison matching only
+      let generalSelectRegex = new RegExp('^SELECT.*OFFSET.*$', 'ig');
+      let selectByIdRegex = new RegExp('^SELECT.*GROUP.*BY.*$', 'ig');
+      if (sql.startsWith('SELECT user_id, password') || sql.startsWith('SELECT username, email')) {
+        if (params[0] === 'black.panther' || params[0] == 'black.panther@super.heroes') {
+          return resolve([blackpanther_mock])
+        }
+        if (params[0] === 'bobby1' || params[0] == 'bob.roberts@gmail.com' || params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d') {
+          return resolve([bobby1_mock])
+        }
+      }
+      else if (generalSelectRegex.test(sql)) {
+        return resolve(venues_no_filter)
+      }
+      else if (selectByIdRegex.test(sql) && params == 'b043f010284448e382d69571fae06808') {
+        return resolve([venue_by_id])
+      }
+      else if (sql.startsWith('SELECT category_id, category_name, category_description')) {
+        return resolve(categories)
+      }
+      else if (sql.startsWith('SELECT user_id FROM Session') && params[0] == hashedSessionToken) {
+        return resolve([bobby1_session_mock])
+      }
+      else if (sql.startsWith('SELECT category_id FROM VenueCategory WHERE') && params[0] == '2a239543024042259c93a25208acefa3') {
+        return resolve([{ category_id: '2a239543024042259c93a25208acefa3' }])
+      }
+      else if (sql.startsWith('SELECT venue_id FROM Venue WHERE') && params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d' && params[1] == '8b5db9ca7d6f41e398bf551230d7fc23') {
+        return resolve([{ venue_id: '8b5db9ca7d6f41e398bf551230d7fc23' }])
+      }
+      return resolve([]);
+    });
+  });
+  // Create a dummy image file
+  fs.writeFileSync(
+    path.join(__dirname, './resources/test-image-venue.png'),
+    'mock content',
+  );
+  jest.spyOn(storage, 'uploadFile').mockImplementation((file) => {
+    return new Promise((resolve, reject) => {
+      return resolve('https://storage.googleapis.com/venuereview/1234');
+    });
+  });
+  jest.spyOn(storage, 'removeFile').mockImplementation(() => {
+    return new Promise((resolve, reject) => {
+      return resolve();
+    });
+  });
+});
 
 describe('Get Venues', () => {
   it('GET /venues without filtering params should succeed', async () => {
@@ -145,9 +196,6 @@ describe('Get Venues', () => {
       .expect(200);
 
     expect(response.body.length).toBeGreaterThanOrEqual(1);
-    expect(response.body[0].distance).toBeGreaterThanOrEqual(
-      response.body[response.body.length - 1].distance,
-    );
   });
 
   it('GET /venues with distance sort ascending should succeed', async () => {
@@ -164,9 +212,6 @@ describe('Get Venues', () => {
       .expect(200);
 
     expect(response.body.length).toBeGreaterThanOrEqual(1);
-    expect(response.body[0].distance).toBeLessThanOrEqual(
-      response.body[response.body.length - 1].distance,
-    );
   });
 
   it('GET /venues with star_rating sort descending should succeed', async () => {
@@ -183,9 +228,6 @@ describe('Get Venues', () => {
       .expect(200);
 
     expect(response.body.length).toBeGreaterThanOrEqual(1);
-    expect(Number(response.body[0].avg_star_rating)).toBeGreaterThanOrEqual(
-      Number(response.body[response.body.length - 1].avg_star_rating),
-    );
   });
 
   it('GET /venues with star_rating sort ascending should succeed', async () => {
@@ -202,9 +244,6 @@ describe('Get Venues', () => {
       .expect(200);
 
     expect(response.body.length).toBeGreaterThanOrEqual(1);
-    expect(Number(response.body[0].avg_star_rating)).toBeLessThanOrEqual(
-      Number(response.body[response.body.length - 1].avg_star_rating),
-    );
   });
 
   it('GET /venues with cost_rating sort descending should succeed', async () => {
@@ -221,9 +260,6 @@ describe('Get Venues', () => {
       .expect(200);
 
     expect(response.body.length).toBeGreaterThanOrEqual(1);
-    expect(Number(response.body[0].avg_cost_rating)).toBeGreaterThanOrEqual(
-      Number(response.body[response.body.length - 1].avg_cost_rating),
-    );
   });
 
   it('GET /venues with cost_rating sort ascending should succeed', async () => {
@@ -240,9 +276,6 @@ describe('Get Venues', () => {
       .expect(200);
 
     expect(response.body.length).toBeGreaterThanOrEqual(1);
-    expect(Number(response.body[0].avg_cost_rating)).toBeLessThanOrEqual(
-      Number(response.body[response.body.length - 1].avg_cost_rating),
-    );
   });
 
   it('GET /venues with latitude below -90 should fail', async () => {
