@@ -25,22 +25,30 @@ beforeAll(async () => {
   jest.spyOn(db, 'poolQuery').mockImplementation((sql, params) => {
     return new Promise((resolve, reject) => {
       sql = sql.replace(/\n|\t/g, '').replace(/\s+/g, ' ').trim(); // Remove newlines and tabs from sql, for comparison matching only
-      if (sql.startsWith('SELECT user_id, password') || sql.startsWith('SELECT username, email')) {
-        if (params[0] === 'black.panther' || params[0] == 'black.panther@super.heroes') {
-          return resolve([blackpanther_mock])
+      if (
+        sql.startsWith('SELECT user_id, password') ||
+        sql.startsWith('SELECT username, email')
+      ) {
+        if (
+          params[0] === 'black.panther' ||
+          params[0] == 'black.panther@super.heroes'
+        ) {
+          return resolve([blackpanther_mock]);
         }
-        if (params[0] === 'bobby1' || params[0] == 'bob.roberts@gmail.com' || params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d') {
-          return resolve([bobby1_mock])
+        if (
+          params[0] === 'bobby1' ||
+          params[0] == 'bob.roberts@gmail.com' ||
+          params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d'
+        ) {
+          return resolve([bobby1_mock]);
         }
-      }
-      else if (sql.startsWith('SELECT user_id FROM Session')) {
+      } else if (sql.startsWith('SELECT user_id FROM Session')) {
         if (params[0] == hashedSessionToken) {
-          return resolve([bobby1_session_mock])
+          return resolve([bobby1_session_mock]);
         }
-      }
-      else if (sql.startsWith('SELECT profile_photo_filename FROM')) {
+      } else if (sql.startsWith('SELECT profile_photo_filename FROM')) {
         if (params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d') {
-          return resolve([{ profile_photo_filename: 'testing.png' }])
+          return resolve([{ profile_photo_filename: 'testing.png' }]);
         }
       }
       return resolve([]);

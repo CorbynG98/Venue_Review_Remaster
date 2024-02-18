@@ -8,10 +8,10 @@ export default interface VenueCategoryResource {
 
 const getCategories = async (): Promise<VenueCategoryResource[]> => {
   try {
-    let result = await poolQuery(
+    let result = (await poolQuery(
       'SELECT category_id, category_name, category_description FROM VenueCategory',
-      null
-    ) as VenueCategoryResource[];
+      null,
+    )) as VenueCategoryResource[];
     return result;
   } catch (err) {
     throw err;
@@ -20,10 +20,10 @@ const getCategories = async (): Promise<VenueCategoryResource[]> => {
 
 const doesCategoryExist = async (category_id: string): Promise<boolean> => {
   try {
-    let result = await poolQuery(
+    let result = (await poolQuery(
       'SELECT category_id FROM VenueCategory WHERE category_id = ?',
       [category_id],
-    ) as { category_id: string }[];
+    )) as { category_id: string }[];
     return result.length == 1;
   } catch (err) {
     throw err;
@@ -31,4 +31,3 @@ const doesCategoryExist = async (category_id: string): Promise<boolean> => {
 };
 
 export { doesCategoryExist, getCategories };
-

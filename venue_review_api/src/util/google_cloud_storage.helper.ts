@@ -29,9 +29,11 @@ export const uploadFile = async (
     const bucket = storage.bucket(bucketName);
     const file = bucket.file(fileName);
 
-    file.save(fileBuffer).then(() => {
-      resolve(file.metadata.mediaLink ?? null);
-    })
+    file
+      .save(fileBuffer)
+      .then(() => {
+        resolve(file.metadata.mediaLink ?? null);
+      })
       .catch((err) => {
         reject(err);
       });
@@ -43,7 +45,6 @@ export const removeFile = async (
   bucketName: string,
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
-    if (isTest) return resolve(); // On test mode, don't actually call google. Just mimic a success
     if (!storage.bucket(bucketName).exists()) return resolve();
     if (!storage.bucket(bucketName).file(filePath).exists()) return resolve();
 

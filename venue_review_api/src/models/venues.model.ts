@@ -32,6 +32,7 @@ interface VenueResource {
 }
 
 interface VenuePhotoResource {
+  venue_photo_id: string;
   photo_filename: string;
   photo_description: string;
   is_primary: boolean;
@@ -43,7 +44,7 @@ const getVenues = async (
   order_condition: string,
 ): Promise<VenueSummaryResource[]> => {
   try {
-    let result = await poolQuery(
+    let result = (await poolQuery(
       `
       SELECT 
         v.venue_id,
@@ -70,7 +71,7 @@ const getVenues = async (
       LIMIT ?
       OFFSET ?`,
       values,
-    ) as VenueSummaryResource[];
+    )) as VenueSummaryResource[];
     return result;
   } catch (err) {
     throw err;
@@ -91,7 +92,7 @@ const createVenue = async (values: string[]): Promise<void> => {
 
 const getVenueById = async (values: string): Promise<VenueResource | null> => {
   try {
-    let result = await poolQuery(
+    let result = (await poolQuery(
       `
       SELECT
         v.venue_name,
@@ -109,7 +110,7 @@ const getVenueById = async (values: string): Promise<VenueResource | null> => {
         longitude,
         IFNULL(AVG(star_rating), 0) as avg_star_rating,
         IFNULL(AVG(mode_cost_rating), 5) as avg_cost_rating,
-        GROUP_CONCAT(CONCAT_WS('^', vp.photo_filename, vp.photo_description, vp.is_primary) SEPARATOR '[]') as photos
+        GROUP_CONCAT(CONCAT_WS('^', vp.venue_photo_id, vp.photo_filename, vp.photo_description, vp.is_primary) SEPARATOR '[]') as photos
       FROM Venue v
       JOIN User u ON v.admin_id = u.user_id
       JOIN VenueCategory c ON c.category_id = v.category_id
@@ -119,19 +120,37 @@ const getVenueById = async (values: string): Promise<VenueResource | null> => {
       WHERE v.venue_id = ?
       GROUP BY v.venue_id;`,
       values,
-    ) as any;
+    )) as any;
     if (result.length == 0) return null;
     // Do some processing on the photos object, to format it nicely
-    result[0].photos = result[0].photos.split('[]').map((photo: string) => {
-      const [photo_filename, photo_description, is_primary] =
-        photo.split('^');
-      let is_primary_bool = is_primary == '1' ? true : false;
-      return {
-        photo_filename,
-        photo_description,
-        is_primary_bool,
-      };
-    });
+    // Have to do some funky work here because of a kink causing photos to duplicate in the result.
+    // Haven't figured out the SQL solution just yet, but will do that some day.
+    const regex = /^(\[\])+$/;
+    if (regex.test(result[0].photos)) result[0].photos = [];
+    else {
+      const uniquePhotos = new Set<string>();
+      result[0].photos = result[0].photos
+        .split('[]')
+        .map((photo: string) => {
+          const [
+            venue_photo_id,
+            photo_filename,
+            photo_description,
+            is_primary,
+          ] = photo.split('^');
+          let is_primary_bool = is_primary == '1' ? true : false;
+          if (!uniquePhotos.has(venue_photo_id)) {
+            uniquePhotos.add(venue_photo_id);
+            return {
+              venue_photo_id,
+              photo_filename,
+              photo_description,
+              is_primary_bool,
+            };
+          }
+        })
+        .filter((photo: VenuePhotoResource) => photo != null);
+    }
     return result[0];
   } catch (err) {
     throw err;
@@ -161,4 +180,3 @@ const updateVenue = async (values: string[]): Promise<void> => {
 };
 
 export { createVenue, getVenueById, getVenues, updateVenue };
-

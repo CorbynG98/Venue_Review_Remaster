@@ -24,18 +24,20 @@ beforeAll(async () => {
       sql = sql.replace(/\n|\t/g, '').replace(/\s+/g, ' ').trim(); // Remove newlines and tabs from sql, for comparison matching only
       if (sql.startsWith('SELECT review_author_id, username, review_body')) {
         if (params[0] === '8b5db9ca7d6f41e398bf551230d7fc23') {
-          return resolve(thewok_reviews_mock)
+          return resolve(thewok_reviews_mock);
         } else if (params[0] === 'totallyInvalid') {
-          return resolve([])
+          return resolve([]);
         }
-      }
-      else if (sql.startsWith('SELECT user_id FROM Session')) {
+      } else if (sql.startsWith('SELECT user_id FROM Session')) {
         if (params[0] == hashedSessionToken) {
-          return resolve([bobby1_session_mock])
+          return resolve([bobby1_session_mock]);
         }
-      }
-      else if (sql.startsWith('SELECT (SELECT CASE WHEN (SELECT review_id')) {
-        if (params[0] == 'b043f010284448e382d69571fae06808' && params[1] == 'c48a5cfd48b94ac68787a3776d6ae78d') return resolve([{ can_review: '1' }]);
+      } else if (sql.startsWith('SELECT (SELECT CASE WHEN (SELECT review_id')) {
+        if (
+          params[0] == 'b043f010284448e382d69571fae06808' &&
+          params[1] == 'c48a5cfd48b94ac68787a3776d6ae78d'
+        )
+          return resolve([{ can_review: '1' }]);
         resolve([{ can_review: '0' }]);
       }
       return resolve([]);

@@ -8,18 +8,25 @@
     />
     <div class="venue_details" v-else>
       <div class="title_line">
-        <h1 style="color: white">{{this.venue.venue_name}}</h1>
-        <p style="color: white; line-height: 3.2rem">Return to venue list</p>
+        <h1 style="color: white">{{ this.venue.venue_name }}</h1>
+        <a class="return_button" v-on:click="this.$router.push('/Venues')">Return to venue list</a>
       </div>
       <v-carousel show-arrows="hover">
-        <v-carousel-item v-for="image in venue.photos" v-bind:key="image.photo_filename" :src="image.photo_filename" lazy-src="https://storage.googleapis.com/venue-review-venue-image/default.jpg" cover></v-carousel-item>
+        <v-carousel-item
+          v-for="image in venue.photos"
+          v-bind:key="image.photo_filename"
+          :src="image.photo_filename"
+          lazy-src="https://storage.googleapis.com/venue-review-venue-image/default.jpg"
+          cover
+        ></v-carousel-item>
       </v-carousel>
+      <div class="padder"></div>
       <div class="info_container">
         <div class="info_data">
           <div>
-            <p class="white-text">Category:</p>
-            <p class="white-text">Star Rating:</p>
-            <p class="white-text">Cost Rating:</p>
+            <p class="white-text">Category:&nbsp;&nbsp;</p>
+            <p class="white-text">Star Rating:&nbsp;&nbsp;</p>
+            <p class="white-text">Cost Rating:&nbsp;&nbsp;</p>
           </div>
           <div>
             <p class="white-text">{{ this.venue.category_name }}</p>
@@ -33,10 +40,17 @@
             <p class="white-text">{{ getDollarSigns(this.venue.avg_cost_rating) }}</p>
           </div>
         </div>
-        <div>
-          <p class="white-text">Admin: {{ this.venue.username }}</p>
-          <p class="white-text">Created: {{ this.venue.date_added }}</p>
-          <p class="white-text">City: {{ this.venue.city }}</p>
+        <div class="info_data">
+          <div>
+            <p class="white-text">Admin:&nbsp;&nbsp;</p>
+            <p class="white-text">Created:&nbsp;&nbsp;</p>
+            <p class="white-text">City:&nbsp;&nbsp;</p>
+          </div>
+          <div>
+            <p class="white-text">{{ this.venue.username }}</p>
+            <p class="white-text">{{ this.formatCreatedDate(this.venue.date_added) }}</p>
+            <p class="white-text">{{ this.venue.city }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -45,6 +59,7 @@
 
 <script lang="ts">
 import { SemipolarSpinner } from 'epic-spinners'
+import { DateTime } from 'luxon'
 import StarRating from 'vue-star-rating'
 import { GetVenueById } from '../apiclient/clients/venues_client'
 import notyf from '../components/NotyfComponent'
@@ -53,7 +68,7 @@ export default {
   components: { SemipolarSpinner, StarRating },
   data: () => ({
     venue: {} as VenueDetailsResource,
-    venueLoading: true,
+    venueLoading: true
   }),
   mounted: function () {
     this.getVenues()
@@ -65,6 +80,9 @@ export default {
       }
       return parseFloat(parseFloat(ratingRaw).toFixed(2))
     },
+    formatCreatedDate(date: string) {
+      return DateTime.fromISO(date).toLocaleString(DateTime.DATETIME_MED)
+    },
     getDollarSigns(costRating: number) {
       if (costRating === null || costRating === undefined || costRating === 0) {
         return 'Free'
@@ -75,13 +93,13 @@ export default {
       this.venueLoading = true
       GetVenueById(this.$route.params.venue_id)
         .then((result) => {
-          console.log('test', result);
-          this.venue = result;
+          console.log('test', result)
+          this.venue = result
           this.venueLoading = false
         })
         .catch((err) => {
           this.venuesLoading = false
-          if (err == 'Network error') return; // We handle this error type globally
+          if (err == 'Network error') return // We handle this error type globally
           notyf.error(err)
         })
     }
@@ -106,6 +124,7 @@ export default {
   width: 100%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 .white-text {
   color: #ffffff;
@@ -117,5 +136,16 @@ export default {
 }
 .info_data {
   display: flex;
+}
+.return_button {
+  color: white;
+  transition: 0.2s;
+}
+.return_button:hover {
+  cursor: pointer;
+  color: #aaaaaa;
+}
+.padder {
+  height: 0.5rem;
 }
 </style>

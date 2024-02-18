@@ -6,7 +6,6 @@ import server from '../src/config/express';
 import { bobby1_mock } from './mocks//user_mocks';
 import { bobby1_session_mock } from './mocks/session_mocks';
 
-
 const requestWithSupertest = supertest(server);
 
 // Safety fallback check for test ENV
@@ -25,17 +24,15 @@ beforeAll(async () => {
     return new Promise((resolve, reject) => {
       if (sql.startsWith('SELECT user_id, password')) {
         if (params[0] === 'bobby1' || params[0] == 'bob.roberts@gmail.com') {
-          return resolve([bobby1_mock])
+          return resolve([bobby1_mock]);
         }
-      }
-      else if (sql.startsWith('SELECT user_id FROM Session')) {
+      } else if (sql.startsWith('SELECT user_id FROM Session')) {
         if (params[0] == hashedSessionToken) {
-          return resolve([bobby1_session_mock])
+          return resolve([bobby1_session_mock]);
         }
-      }
-      else if (sql.startsWith('DELETE FROM Session')) {
+      } else if (sql.startsWith('DELETE FROM Session')) {
         if (params[0] == hashedSessionToken) {
-          return resolve([])
+          return resolve([]);
         }
       }
       return resolve([]);

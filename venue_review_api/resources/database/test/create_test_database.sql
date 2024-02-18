@@ -72,11 +72,12 @@ CREATE TABLE Venue (
 ) ENGINE = InnoDB;
 
 CREATE TABLE VenuePhoto (
+  venue_photo_id VARCHAR(128) NOT NULL,
   venue_id VARCHAR(128) NOT NULL, 
   photo_filename VARCHAR(512) NOT NULL, 
   photo_description VARCHAR(128), 
   is_primary BOOLEAN NOT NULL DEFAULT false, 
-  PRIMARY KEY (venue_id, photo_filename), 
+  PRIMARY KEY (venue_photo_id), 
   FOREIGN KEY (venue_id) REFERENCES Venue (venue_id)
 ) ENGINE = InnoDB;
 

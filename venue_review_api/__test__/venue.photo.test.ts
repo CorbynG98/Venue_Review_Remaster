@@ -25,32 +25,53 @@ beforeAll(async () => {
   jest.spyOn(db, 'poolQuery').mockImplementation((sql, params) => {
     return new Promise((resolve, reject) => {
       sql = sql.replace(/\n|\t/g, '').replace(/\s+/g, ' ').trim(); // Remove newlines and tabs from sql, for comparison matching only
-      if (sql.startsWith('SELECT user_id, password') || sql.startsWith('SELECT username, email')) {
-        if (params[0] === 'black.panther' || params[0] == 'black.panther@super.heroes') {
-          return resolve([blackpanther_mock])
+      if (
+        sql.startsWith('SELECT user_id, password') ||
+        sql.startsWith('SELECT username, email')
+      ) {
+        if (
+          params[0] === 'black.panther' ||
+          params[0] == 'black.panther@super.heroes'
+        ) {
+          return resolve([blackpanther_mock]);
         }
-        if (params[0] === 'bobby1' || params[0] == 'bob.roberts@gmail.com' || params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d') {
-          return resolve([bobby1_mock])
+        if (
+          params[0] === 'bobby1' ||
+          params[0] == 'bob.roberts@gmail.com' ||
+          params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d'
+        ) {
+          return resolve([bobby1_mock]);
         }
-      }
-      else if (sql.startsWith('SELECT user_id FROM Session')) {
+      } else if (sql.startsWith('SELECT user_id FROM Session')) {
         if (params[0] == hashedSessionToken) {
-          return resolve([bobby1_session_mock])
+          return resolve([bobby1_session_mock]);
         }
-      }
-      else if (sql.startsWith('SELECT is_primary FROM VenuePhoto WHERE')) {
-        if (params[0] == '8b5db9ca7d6f41e398bf551230d7fc23' && params[1] == 'test-image-venue.png') {
-          return resolve([{ is_primary: 1 }])
+      } else if (
+        sql.startsWith(
+          'SELECT is_primary, photo_filename FROM VenuePhoto WHERE',
+        )
+      ) {
+        if (
+          params[0] == '8b5db9ca7d6f41e398bf551230d7fc23' &&
+          params[1] == '65d28077cb7021feecba9e75'
+        ) {
+          return resolve([
+            { is_primary: 1, photo_filename: 'test-image-venue.png' },
+          ]);
         }
-      }
-      else if (sql.startsWith('SELECT venue_id FROM VenuePhoto')) {
-        if (params[0] == '8b5db9ca7d6f41e398bf551230d7fc23' && params[1] == 'test-image-venue.png') {
-          return resolve([{ venue_id: '8b5db9ca7d6f41e398bf551230d7fc23' }])
+      } else if (sql.startsWith('SELECT venue_id FROM VenuePhoto')) {
+        if (
+          params[0] == '8b5db9ca7d6f41e398bf551230d7fc23' &&
+          params[1] == '65d28077cb7021feecba9e75'
+        ) {
+          return resolve([{ venue_id: '8b5db9ca7d6f41e398bf551230d7fc23' }]);
         }
-      }
-      else if (sql.startsWith('SELECT venue_id FROM Venue WHERE')) {
-        if (params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d' && params[1] == '8b5db9ca7d6f41e398bf551230d7fc23') {
-          return resolve([{ venue_id: '8b5db9ca7d6f41e398bf551230d7fc23' }])
+      } else if (sql.startsWith('SELECT venue_id FROM Venue WHERE')) {
+        if (
+          params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d' &&
+          params[1] == '8b5db9ca7d6f41e398bf551230d7fc23'
+        ) {
+          return resolve([{ venue_id: '8b5db9ca7d6f41e398bf551230d7fc23' }]);
         }
       }
       return resolve([]);
@@ -183,20 +204,18 @@ describe('Upload Venue Photo', () => {
 
 describe('Set Venue Primary Photo', () => {
   it('POST /venues/:id/photos/:photoId/setPrimary with valid session and data should succeed', async () => {
-    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
       .post(
-        `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}/setPrimary`,
+        `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/65d28077cb7021feecba9e75/setPrimary`,
       )
       .set('Authorization', `${sessionToken}`)
       .expect(200);
   });
 
   it('POST /venues/:id/photos/:photoId/setPrimary with valid session and data where image is already primary should succeed', async () => {
-    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
       .post(
-        `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}/setPrimary`,
+        `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/65d28077cb7021feecba9e75/setPrimary`,
       )
       .set('Authorization', `${sessionToken}`)
       .expect(200);
@@ -221,20 +240,18 @@ describe('Set Venue Primary Photo', () => {
   });
 
   it('POST /venues/:id/photos/:photoId/setPrimary with invalid session and valid image should fail', async () => {
-    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
       .post(
-        `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}/setPrimary`,
+        `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/65d28077cb7021feecba9e75/setPrimary`,
       )
       .set('Authorization', `superInvalid`)
       .expect(403);
   });
 
   it('POST /venues/:id/photos/:photoId/setPrimary with invalid session and valid image should fail', async () => {
-    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
       .post(
-        `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}/setPrimary`,
+        `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/65d28077cb7021feecba9e75/setPrimary`,
       )
       .expect(401);
   });
@@ -242,25 +259,28 @@ describe('Set Venue Primary Photo', () => {
 
 describe('Remove Venue Photo', () => {
   it('DELETE /venues/:id/photos/:photoId with valid session and non primary photo should succeed', async () => {
-    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
-      .delete(`/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}`)
+      .delete(
+        `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/65d28077cb7021feecba9e75`,
+      )
       .set('Authorization', `${sessionToken}`)
       .expect(204);
   });
 
   it('DELETE /venues/:id/photos/:photoId with valid session and primary photo should succeed', async () => {
-    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
-      .delete(`/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}`)
+      .delete(
+        `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/65d28077cb7021feecba9e75`,
+      )
       .set('Authorization', `${sessionToken}`)
       .expect(204);
   });
 
   it('DELETE /venues/:id/photos/:photoId with a valid image on an account where not admin should fail', async () => {
-    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
-      .delete(`/venues/b043f010284448e382d69571fae06808/photos/${imageURL}`)
+      .delete(
+        `/venues/b043f010284448e382d69571fae06808/photos/65d28077cb7021feecba9e75`,
+      )
       .set('Authorization', `${sessionToken}`)
       .expect(403);
   });
@@ -275,17 +295,19 @@ describe('Remove Venue Photo', () => {
   });
 
   it('DELETE /venues/:id/photos/:photoId with invalid session and valid image should fail', async () => {
-    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
-      .delete(`/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}`)
+      .delete(
+        `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/65d28077cb7021feecba9e75`,
+      )
       .set('Authorization', `superInvalid`)
       .expect(403);
   });
 
   it('DELETE /venues/:id/photos/:photoId with invalid session and valid image should fail', async () => {
-    let imageURL = 'test-image-venue.png';
     await requestWithSupertest
-      .delete(`/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/${imageURL}`)
+      .delete(
+        `/venues/8b5db9ca7d6f41e398bf551230d7fc23/photos/65d28077cb7021feecba9e75`,
+      )
       .expect(401);
   });
 });

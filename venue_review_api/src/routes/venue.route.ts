@@ -138,11 +138,11 @@ const user_routes = (app: Express) => {
     .post([...validatePhotoPrimaryField, venue_authenticate], createVenuePhoto);
 
   app
-    .route('/venues/:id/photos/:photoFilename')
+    .route('/venues/:id/photos/:photo_id')
     .delete(venue_authenticate, removePhoto);
 
   app
-    .route('/venues/:id/photos/:photoFilename/setPrimary')
+    .route('/venues/:id/photos/:photo_id/setPrimary')
     .post([...validatePhotoPrimaryField, venue_authenticate], setNewPrimary);
 };
 

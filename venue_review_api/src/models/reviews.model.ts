@@ -13,16 +13,18 @@ interface ReviewerAuthorResource {
   username: string;
 }
 
-const getVenueReviews = async (venue_id: string): Promise<VenueReviewsResource[]> => {
+const getVenueReviews = async (
+  venue_id: string,
+): Promise<VenueReviewsResource[]> => {
   try {
-    let result = await poolQuery(
+    let result = (await poolQuery(
       `SELECT review_author_id, username, review_body, star_rating, cost_rating, time_posted 
       FROM Review 
       JOIN User ON Review.review_author_id = User.user_id 
       WHERE reviewed_venue_id = ?
       ORDER BY time_posted DESC`,
       [venue_id],
-    ) as any;
+    )) as any;
     result.forEach((element: any) => {
       element.review_author = {
         user_id: element.review_author_id,
@@ -38,9 +40,12 @@ const getVenueReviews = async (venue_id: string): Promise<VenueReviewsResource[]
 };
 
 // UPDATE SELECT TO GET ONLY DATA WE WANT, THEN UPDATE PROMISE TO REMOVE "ANY"
-const checkReviewer = async (user_id: string, venue_id: string): Promise<boolean> => {
+const checkReviewer = async (
+  user_id: string,
+  venue_id: string,
+): Promise<boolean> => {
   try {
-    let result = await poolQuery(
+    let result = (await poolQuery(
       `
       SELECT
         (SELECT
@@ -54,7 +59,7 @@ const checkReviewer = async (user_id: string, venue_id: string): Promise<boolean
       v.venue_id = ?
       AND v.admin_id != ?`,
       [venue_id, user_id, venue_id, user_id],
-    ) as { can_review: string }[];
+    )) as { can_review: string }[];
     return result[0].can_review == '1';
   } catch (err) {
     throw err;
@@ -67,11 +72,10 @@ const createReview = async (values: string[]): Promise<void> => {
       'INSERT INTO Review (review_id, reviewed_venue_id, review_body, star_rating, cost_rating, time_posted, review_author_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
       values,
     );
-    return
+    return;
   } catch (err) {
     throw err;
   }
 };
 
 export { checkReviewer, createReview, getVenueReviews };
-

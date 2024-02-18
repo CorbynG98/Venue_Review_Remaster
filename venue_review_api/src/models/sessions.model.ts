@@ -6,9 +6,14 @@ export default interface SessionResource {
   user_id: string;
 }
 
-const createSession = async (values: (string | Date | null)[]): Promise<void> => {
+const createSession = async (
+  values: (string | Date | null)[],
+): Promise<void> => {
   try {
-    await poolQuery('INSERT INTO Session (session_id, token, created_at, expiry, user_id) VALUES (?, ?, ?, ?, ?)', values);
+    await poolQuery(
+      'INSERT INTO Session (session_id, token, created_at, expiry, user_id) VALUES (?, ?, ?, ?, ?)',
+      values,
+    );
     return;
   } catch (err) {
     throw err;
@@ -17,7 +22,10 @@ const createSession = async (values: (string | Date | null)[]): Promise<void> =>
 
 const getByToken = async (token: string): Promise<string | null> => {
   try {
-    let result = await poolQuery('SELECT user_id FROM Session WHERE token = ? LIMIT 1', [token]) as SessionResource[];
+    let result = (await poolQuery(
+      'SELECT user_id FROM Session WHERE token = ? LIMIT 1',
+      [token],
+    )) as SessionResource[];
     if (result == null || result.length != 1) throw new Error('Invalid token.');
     return result[0].user_id;
   } catch (err) {
@@ -39,7 +47,10 @@ const verifyVenueAuth = async (
   venue_id: string,
 ): Promise<boolean> => {
   try {
-    let result = await poolQuery('SELECT venue_id FROM Venue WHERE admin_id = ? AND venue_id = ?', [user_id, venue_id]) as { venue_id: string }[];
+    let result = (await poolQuery(
+      'SELECT venue_id FROM Venue WHERE admin_id = ? AND venue_id = ?',
+      [user_id, venue_id],
+    )) as { venue_id: string }[];
     return result.length == 1;
   } catch (err) {
     throw err;
@@ -47,4 +58,3 @@ const verifyVenueAuth = async (
 };
 
 export { createSession, getByToken, removeSession, verifyVenueAuth };
-

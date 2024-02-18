@@ -108,12 +108,12 @@ const getVenues = async (req: Request, res: Response) => {
 
   let maxCostRating =
     req.query.maxCostRating != null &&
-      req.query.maxCostRating.toString().length > 0
+    req.query.maxCostRating.toString().length > 0
       ? Number(req.query.maxCostRating?.toString())
       : null;
   let minStarRating =
     req.query.minStarRating != null &&
-      req.query.minStarRating.toString().length > 0
+    req.query.minStarRating.toString().length > 0
       ? Number(req.query.minStarRating?.toString())
       : null;
 
@@ -156,7 +156,7 @@ const createVenue = async (req: Request, res: Response) => {
   // We know it's valid at this point, and can trust the process.
   let token = req.header('Authorization')?.toString() ?? '';
   let hashedToken = crypto.createHash('sha512').update(token).digest('hex');
-  let user_id = await get_session_by_token(hashedToken) as string;
+  let user_id = (await get_session_by_token(hashedToken)) as string;
 
   let values = [
     uuidv4().replace(/-/g, ''),
@@ -290,25 +290,21 @@ const createVenuePhoto = async (req: Request, res: Response) => {
 
 const removePhoto = async (req: Request, res: Response) => {
   let venue_id = req.params.id;
-  let filename = req.params.photoFilename;
+  let photo_id = req.params.photo_id;
 
-  let values = [venue_id, filename];
-  remove_file(filename, venuePhotoBucket)
-    .then(() => {
-      remove_venue_photo(values)
-        .then((result) => {
-          if (result == null) {
-            return res
-              .status(404)
-              .json({ status: 404, message: 'No photo to remove.' });
-          }
-          make_random_primary(venue_id).then(() => {
-            res.status(204).json({ status: 204, message: 'No Content.' });
-          });
-        })
-        .catch((err) => {
-          res.status(500).json({ status: 500, message: err?.code ?? err });
+  let values = [venue_id, photo_id];
+  remove_venue_photo(values)
+    .then((result) => {
+      if (result == null) {
+        return res
+          .status(404)
+          .json({ status: 404, message: 'No photo to remove.' });
+      }
+      make_random_primary(venue_id).then(() => {
+        remove_file(result.photo_filename, venuePhotoBucket).then(() => {
+          res.status(204).json({ status: 204, message: 'No Content.' });
         });
+      });
     })
     .catch((err) => {
       res.status(500).json({ status: 500, message: err?.code ?? err });
@@ -317,9 +313,9 @@ const removePhoto = async (req: Request, res: Response) => {
 
 const setNewPrimary = async (req: Request, res: Response) => {
   let venue_id = req.params.id;
-  let filename = req.params.photoFilename;
+  let photo_id = req.params.photo_id;
 
-  let values = [venue_id, filename];
+  let values = [venue_id, photo_id];
 
   make_new_primary(values)
     .then((result) => {
@@ -345,6 +341,5 @@ export {
   getVenues,
   removePhoto,
   setNewPrimary,
-  updateVenue
+  updateVenue,
 };
-

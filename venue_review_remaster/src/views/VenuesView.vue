@@ -133,7 +133,7 @@ export default {
         align: 'start',
         key: 'avg_cost_rating',
         sortable: false
-      },
+      }
     ] as ReadonlyArray<unknown>,
     venues: [] as VenueSummaryResource[],
     categories: [] as CategoryeResource[],
@@ -177,7 +177,7 @@ export default {
   },
   methods: {
     rowClickevent(event: any, data: { item: { venue_id: any } }) {
-      this.$router.push(`/Venues/${data.item.venue_id}`, () => {}, { replace: true });
+      this.$router.push(`/Venues/${data.item.venue_id}`, () => {}, { replace: true })
     },
     customLabel(option) {
       return `${option.library} - ${option.language}`
@@ -246,7 +246,7 @@ export default {
         })
         .catch((err) => {
           this.categoriesLoading = false
-          if (err == 'Network error') return; // We handle this error type globally
+          if (err == 'Network error') return // We handle this error type globally
           notyf.error(err)
         })
     },
@@ -278,7 +278,7 @@ export default {
         })
         .catch((err) => {
           this.venuesLoading = false
-          if (err == 'Network error') return; // We handle this error type globally
+          if (err == 'Network error') return // We handle this error type globally
           notyf.error(err)
         })
     }

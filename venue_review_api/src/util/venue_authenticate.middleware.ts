@@ -27,7 +27,12 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
       verify_venue_auth(result as string, venue_id)
         .then((result) => {
           if (result) next();
-          else return res.status(403).json('Access denied. Invalid venue or permission to work with it.');
+          else
+            return res
+              .status(403)
+              .json(
+                'Access denied. Invalid venue or permission to work with it.',
+              );
         })
         .catch(() => {
           return res

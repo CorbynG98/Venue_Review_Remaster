@@ -25,7 +25,7 @@ const updateUser = async (req: Request, res: Response) => {
   }
   let token = req.header('Authorization')?.toString() ?? '';
   let hashedToken = crypto.createHash('sha512').update(token).digest('hex');
-  let user_id = await get_session_by_token(hashedToken) as string;
+  let user_id = (await get_session_by_token(hashedToken)) as string;
 
   let user = await get_user_by_id(user_id);
   // Check email, if different to one currently used.
@@ -75,7 +75,7 @@ const updateUser = async (req: Request, res: Response) => {
 const uploadPhoto = async (req: Request, res: Response) => {
   let token = req.header('Authorization')?.toString() ?? '';
   let hashedToken = crypto.createHash('sha512').update(token).digest('hex');
-  let user_id = await get_session_by_token(hashedToken) as string;
+  let user_id = (await get_session_by_token(hashedToken)) as string;
 
   if (req.file == null)
     return res.status(400).json({ status: 400, message: 'No file provided.' });
@@ -103,7 +103,7 @@ const uploadPhoto = async (req: Request, res: Response) => {
 const removePhoto = async (req: Request, res: Response) => {
   let token = req.header('Authorization')?.toString() ?? '';
   let hashedToken = crypto.createHash('sha512').update(token).digest('hex');
-  let user_id = await get_session_by_token(hashedToken) as string;
+  let user_id = (await get_session_by_token(hashedToken)) as string;
 
   // Get the users current dp from database
   get_user_dp(user_id)
@@ -135,4 +135,3 @@ const removePhoto = async (req: Request, res: Response) => {
 };
 
 export { removePhoto, updateUser, uploadPhoto };
-

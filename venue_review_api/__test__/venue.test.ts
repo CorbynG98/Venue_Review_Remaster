@@ -28,31 +28,52 @@ beforeAll(async () => {
       sql = sql.replace(/\n|\t/g, '').replace(/\s+/g, ' ').trim(); // Remove newlines and tabs from sql, for comparison matching only
       let generalSelectRegex = new RegExp('^SELECT.*OFFSET.*$', 'ig');
       let selectByIdRegex = new RegExp('^SELECT.*GROUP.*BY.*$', 'ig');
-      if (sql.startsWith('SELECT user_id, password') || sql.startsWith('SELECT username, email')) {
-        if (params[0] === 'black.panther' || params[0] == 'black.panther@super.heroes') {
-          return resolve([blackpanther_mock])
+      if (
+        sql.startsWith('SELECT user_id, password') ||
+        sql.startsWith('SELECT username, email')
+      ) {
+        if (
+          params[0] === 'black.panther' ||
+          params[0] == 'black.panther@super.heroes'
+        ) {
+          return resolve([blackpanther_mock]);
         }
-        if (params[0] === 'bobby1' || params[0] == 'bob.roberts@gmail.com' || params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d') {
-          return resolve([bobby1_mock])
+        if (
+          params[0] === 'bobby1' ||
+          params[0] == 'bob.roberts@gmail.com' ||
+          params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d'
+        ) {
+          return resolve([bobby1_mock]);
         }
-      }
-      else if (generalSelectRegex.test(sql)) {
-        return resolve(venues_no_filter)
-      }
-      else if (selectByIdRegex.test(sql) && params == 'b043f010284448e382d69571fae06808') {
-        return resolve([venue_by_id])
-      }
-      else if (sql.startsWith('SELECT category_id, category_name, category_description')) {
-        return resolve(categories)
-      }
-      else if (sql.startsWith('SELECT user_id FROM Session') && params[0] == hashedSessionToken) {
-        return resolve([bobby1_session_mock])
-      }
-      else if (sql.startsWith('SELECT category_id FROM VenueCategory WHERE') && params[0] == '2a239543024042259c93a25208acefa3') {
-        return resolve([{ category_id: '2a239543024042259c93a25208acefa3' }])
-      }
-      else if (sql.startsWith('SELECT venue_id FROM Venue WHERE') && params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d' && params[1] == '8b5db9ca7d6f41e398bf551230d7fc23') {
-        return resolve([{ venue_id: '8b5db9ca7d6f41e398bf551230d7fc23' }])
+      } else if (generalSelectRegex.test(sql)) {
+        return resolve(venues_no_filter);
+      } else if (
+        selectByIdRegex.test(sql) &&
+        params == 'b043f010284448e382d69571fae06808'
+      ) {
+        return resolve([venue_by_id]);
+      } else if (
+        sql.startsWith(
+          'SELECT category_id, category_name, category_description',
+        )
+      ) {
+        return resolve(categories);
+      } else if (
+        sql.startsWith('SELECT user_id FROM Session') &&
+        params[0] == hashedSessionToken
+      ) {
+        return resolve([bobby1_session_mock]);
+      } else if (
+        sql.startsWith('SELECT category_id FROM VenueCategory WHERE') &&
+        params[0] == '2a239543024042259c93a25208acefa3'
+      ) {
+        return resolve([{ category_id: '2a239543024042259c93a25208acefa3' }]);
+      } else if (
+        sql.startsWith('SELECT venue_id FROM Venue WHERE') &&
+        params[0] == 'c48a5cfd48b94ac68787a3776d6ae78d' &&
+        params[1] == '8b5db9ca7d6f41e398bf551230d7fc23'
+      ) {
+        return resolve([{ venue_id: '8b5db9ca7d6f41e398bf551230d7fc23' }]);
       }
       return resolve([]);
     });

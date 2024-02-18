@@ -1,9 +1,6 @@
 import { Express } from 'express';
 import { check } from 'express-validator';
-import {
-  createReview,
-  getReviews,
-} from '../controllers/review.controller';
+import { createReview, getReviews } from '../controllers/review.controller';
 import authenticate from '../util/user_authenticate.middleware';
 
 const validateReviewData = [

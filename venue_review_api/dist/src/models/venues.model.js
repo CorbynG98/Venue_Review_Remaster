@@ -1,11 +1,15 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateVenue = exports.getVenues = exports.getVenueById = exports.createVenue = void 0;
-const db_1 = require("../config/db");
-const getVenues = (values, where_conditions, order_condition) => {
-    // values = [lat, lat, long, where_conditions, cost, cost, star, star, order, limit, offset]
-    return new Promise((resolve, reject) => {
-        (0, db_1.getPool)().query(`
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.updateVenue =
+  exports.getVenues =
+  exports.getVenueById =
+  exports.createVenue =
+    void 0;
+const db_1 = require('../config/db');
+const getVenues = async (values, where_conditions, order_condition) => {
+  try {
+    let result = await (0, db_1.poolQuery)(
+      `
       SELECT 
         v.venue_id,
         v.venue_name,
@@ -29,27 +33,31 @@ const getVenues = (values, where_conditions, order_condition) => {
         AND (avg_star_rating >= ? OR ? IS NULL)
       ${order_condition}
       LIMIT ?
-      OFFSET ?`, values, (err, result) => {
-            if (err)
-                return reject(err);
-            resolve(result);
-        });
-    });
+      OFFSET ?`,
+      values,
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 exports.getVenues = getVenues;
-const createVenue = (values) => {
-    return new Promise((resolve, reject) => {
-        (0, db_1.getPool)().query('INSERT INTO Venue (venue_id, venue_name, category_id, city, short_description, long_description, address, latitude, longitude, admin_id, date_added) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', values, (err) => {
-            if (err)
-                return reject(err);
-            resolve();
-        });
-    });
+const createVenue = async (values) => {
+  try {
+    await (0, db_1.poolQuery)(
+      'INSERT INTO Venue (venue_id, venue_name, category_id, city, short_description, long_description, address, latitude, longitude, admin_id, date_added) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      values,
+    );
+    return;
+  } catch (err) {
+    throw err;
+  }
 };
 exports.createVenue = createVenue;
-const getVenueById = (values) => {
-    return new Promise((resolve, reject) => {
-        (0, db_1.getPool)().query(`
+const getVenueById = async (values) => {
+  try {
+    let result = await (0, db_1.poolQuery)(
+      `
       SELECT
         v.venue_name,
         v.admin_id,
@@ -64,35 +72,59 @@ const getVenueById = (values) => {
         address,
         latitude,
         longitude,
-        GROUP_CONCAT(CONCAT_WS('^', vp.photo_filename, vp.photo_description, vp.is_primary) SEPARATOR '[]') as photos
+        IFNULL(AVG(star_rating), 0) as avg_star_rating,
+        IFNULL(AVG(mode_cost_rating), 5) as avg_cost_rating,
+        GROUP_CONCAT(CONCAT_WS('^', vp.venue_photo_id, vp.photo_filename, vp.photo_description, vp.is_primary) SEPARATOR '[]') as photos
       FROM Venue v
       JOIN User u ON v.admin_id = u.user_id
       JOIN VenueCategory c ON c.category_id = v.category_id
       LEFT JOIN VenuePhoto vp ON vp.venue_id = v.venue_id
+      LEFT JOIN Review r ON r.reviewed_venue_id = v.venue_id
+      LEFT JOIN ModeCostRating mcr on mcr.venue_id = v.venue_id
       WHERE v.venue_id = ?
-      GROUP BY v.venue_id;`, values, (err, result) => {
-            if (err)
-                return reject(err);
-            if (result.length == 0)
-                return resolve(null);
-            // Do some processing on the photos object, to format it nicely
-            result[0].photos = result[0].photos.split('[]').map((photo) => {
-                const [photo_filename, photo_description, is_primary] = photo.split('^');
-                let is_primary_bool = is_primary == '1' ? true : false;
-                return {
-                    photo_filename,
-                    photo_description,
-                    is_primary_bool,
-                };
-            });
-            resolve(result[0]);
-        });
-    });
+      GROUP BY v.venue_id;`,
+      values,
+    );
+    if (result.length == 0) return null;
+    // Do some processing on the photos object, to format it nicely
+    // Have to do some funky work here because of a kink causing photos to duplicate in the result.
+    // Haven't figured out the SQL solution just yet, but will do that some day.
+    const regex = /^(\[\])+$/;
+    if (regex.test(result[0].photos)) result[0].photos = [];
+    else {
+      const uniquePhotos = new Set();
+      result[0].photos = result[0].photos
+        .split('[]')
+        .map((photo) => {
+          const [
+            venue_photo_id,
+            photo_filename,
+            photo_description,
+            is_primary,
+          ] = photo.split('^');
+          let is_primary_bool = is_primary == '1' ? true : false;
+          if (!uniquePhotos.has(venue_photo_id)) {
+            uniquePhotos.add(venue_photo_id);
+            return {
+              venue_photo_id,
+              photo_filename,
+              photo_description,
+              is_primary_bool,
+            };
+          }
+        })
+        .filter((photo) => photo != null);
+    }
+    return result[0];
+  } catch (err) {
+    throw err;
+  }
 };
 exports.getVenueById = getVenueById;
-const updateVenue = (values) => {
-    return new Promise((resolve, reject) => {
-        (0, db_1.getPool)().query(`
+const updateVenue = async (values) => {
+  try {
+    await (0, db_1.poolQuery)(
+      `
       UPDATE Venue SET
         venue_name = ?,
         category_id = ?,
@@ -102,11 +134,12 @@ const updateVenue = (values) => {
         address = ?,
         latitude = ?,
         longitude = ?
-      WHERE venue_id = ?`, values, (err) => {
-            if (err)
-                return reject(err);
-            resolve();
-        });
-    });
+      WHERE venue_id = ?`,
+      values,
+    );
+    return;
+  } catch (err) {
+    throw err;
+  }
 };
 exports.updateVenue = updateVenue;
