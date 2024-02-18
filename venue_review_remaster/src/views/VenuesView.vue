@@ -97,11 +97,6 @@
           {{ getCategoryName(item.category_id) }}
         </td>
       </template>
-      <template v-slot:[`item.actions`]="{ item }">
-        <td>
-          <p>Some random actions for {{ item.venue_id }}</p>
-        </td>
-      </template>
     </v-data-table-virtual>
     <CustomPaginationComponent
       :page="queryParams.page"
@@ -139,7 +134,6 @@ export default {
         key: 'avg_cost_rating',
         sortable: false
       },
-      { title: 'Actions', align: 'start', key: 'actions', sortable: false }
     ] as ReadonlyArray<unknown>,
     venues: [] as VenueSummaryResource[],
     categories: [] as CategoryeResource[],

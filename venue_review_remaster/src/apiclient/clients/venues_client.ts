@@ -1,5 +1,5 @@
 import { CategoryeResource } from '@/models/CategoryResource'
-import { VenueSummaryResource } from '@/models/VenueResource'
+import { VenueDetailsResource, VenueSummaryResource } from '@/models/VenueResource'
 import { AxiosResponse, CancelTokenSource } from 'axios'
 import { axiosNodeInstance as axios } from '../../interceptors/axiosInterceptor'
 
@@ -54,6 +54,24 @@ export const GetVenues = async (
   const endpoint = `venues?${queryParams}`
   try {
     const response = await axios.get<VenueSummaryResource[], AxiosResponse<VenueSummaryResource[]>>(
+      endpoint,
+      {
+        cancelToken: cancelToken?.token
+      }
+    )
+    return Promise.resolve(response.data)
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}
+
+export const GetVenueById = async (
+  venue_id: string,
+  cancelToken: CancelTokenSource | undefined | null = null
+): Promise<VenueDetailsResource> => {
+  const endpoint = `venues/${venue_id}`
+  try {
+    const response = await axios.get<VenueDetailsResource, AxiosResponse<VenueDetailsResource>>(
       endpoint,
       {
         cancelToken: cancelToken?.token

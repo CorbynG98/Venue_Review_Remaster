@@ -107,11 +107,15 @@ const getVenueById = async (values: string): Promise<VenueResource | null> => {
         address,
         latitude,
         longitude,
+        IFNULL(AVG(star_rating), 0) as avg_star_rating,
+        IFNULL(AVG(mode_cost_rating), 5) as avg_cost_rating,
         GROUP_CONCAT(CONCAT_WS('^', vp.photo_filename, vp.photo_description, vp.is_primary) SEPARATOR '[]') as photos
       FROM Venue v
       JOIN User u ON v.admin_id = u.user_id
       JOIN VenueCategory c ON c.category_id = v.category_id
       LEFT JOIN VenuePhoto vp ON vp.venue_id = v.venue_id
+      LEFT JOIN Review r ON r.reviewed_venue_id = v.venue_id
+      LEFT JOIN ModeCostRating mcr on mcr.venue_id = v.venue_id
       WHERE v.venue_id = ?
       GROUP BY v.venue_id;`,
       values,
