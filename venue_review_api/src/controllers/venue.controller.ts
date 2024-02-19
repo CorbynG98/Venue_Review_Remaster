@@ -263,6 +263,7 @@ const createVenuePhoto = async (req: Request, res: Response) => {
   try {
     upload_file(fileName, image, venuePhotoBucket).then((result) => {
       let values = [
+        uuidv4().replace(/-/g, ''),
         venue_id,
         result,
         req.body.description ?? '',

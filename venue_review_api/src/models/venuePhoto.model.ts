@@ -8,7 +8,7 @@ export default interface VenuePhotoResource {
 const createVenuePhoto = async (values: (string | null)[]): Promise<void> => {
   try {
     await poolQuery(
-      'INSERT INTO VenuePhoto (venue_id, photo_filename, photo_description, is_primary) VALUES (?, ?, ?, ?)',
+      'INSERT INTO VenuePhoto (venue_photo_id, venue_id, photo_filename, photo_description, is_primary) VALUES (?, ?, ?, ?, ?)',
       values,
     );
     return;

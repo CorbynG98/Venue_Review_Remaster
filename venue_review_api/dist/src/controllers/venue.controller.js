@@ -244,6 +244,7 @@ const createVenuePhoto = async (req, res) => {
       venuePhotoBucket,
     ).then((result) => {
       let values = [
+        (0, uuid_1.v4)().replace(/-/g, ''),
         venue_id,
         result,
         req.body.description ?? '',

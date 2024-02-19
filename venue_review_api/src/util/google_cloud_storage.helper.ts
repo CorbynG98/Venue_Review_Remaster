@@ -45,14 +45,24 @@ export const removeFile = async (
   bucketName: string,
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
-    if (!storage.bucket(bucketName).exists()) return resolve();
-    if (!storage.bucket(bucketName).file(filePath).exists()) return resolve();
-
+    // If there are issues getting the image here, we don't need to throw, just resolve as the image doesn't exist anyway
     try {
-      storage.bucket(bucketName).file(filePath).delete();
-      resolve();
+      if (!storage.bucket(bucketName).exists()) return resolve();
+      if (!storage.bucket(bucketName).file(filePath).exists()) return resolve();
     } catch (err) {
-      return reject(err);
+      return resolve();
     }
+
+    storage
+      .bucket(bucketName)
+      .file(filePath)
+      .delete()
+      .then(() => {
+        return resolve();
+      })
+      .catch((err) => {
+        if (err.code === 404) return resolve(); // Not found doesn't need to be checked further
+        return reject(err);
+      });
   });
 };

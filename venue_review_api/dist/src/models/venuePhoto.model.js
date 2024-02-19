@@ -10,7 +10,7 @@ const db_1 = require('../config/db');
 const createVenuePhoto = async (values) => {
   try {
     await (0, db_1.poolQuery)(
-      'INSERT INTO VenuePhoto (venue_id, photo_filename, photo_description, is_primary) VALUES (?, ?, ?, ?)',
+      'INSERT INTO VenuePhoto (venue_photo_id, venue_id, photo_filename, photo_description, is_primary) VALUES (?, ?, ?, ?, ?)',
       values,
     );
     return;
