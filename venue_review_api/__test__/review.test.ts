@@ -22,7 +22,7 @@ beforeAll(async () => {
   jest.spyOn(db, 'poolQuery').mockImplementation((sql, params) => {
     return new Promise((resolve, reject) => {
       sql = sql.replace(/\n|\t/g, '').replace(/\s+/g, ' ').trim(); // Remove newlines and tabs from sql, for comparison matching only
-      if (sql.startsWith('SELECT review_author_id, username, review_body')) {
+      if (sql.startsWith('SELECT review_author_id, username, profile_photo_filename, review_body')) {
         if (params[0] === '8b5db9ca7d6f41e398bf551230d7fc23') {
           return resolve(thewok_reviews_mock);
         } else if (params[0] === 'totallyInvalid') {
@@ -55,6 +55,7 @@ describe('Get Reviews', () => {
     expect(response.body[0]).toHaveProperty('review_author');
     expect(response.body[0].review_author).toHaveProperty('user_id');
     expect(response.body[0].review_author).toHaveProperty('username');
+    expect(response.body[0].review_author).toHaveProperty('profile_photo_filename');
     expect(response.body[0]).toHaveProperty('review_body');
     expect(response.body[0]).toHaveProperty('cost_rating');
     expect(response.body[0]).toHaveProperty('star_rating');

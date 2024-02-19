@@ -73,17 +73,22 @@
 import { SemipolarSpinner } from 'epic-spinners'
 import { DateTime } from 'luxon'
 import StarRating from 'vue-star-rating'
+import { GetReviewsByVenue } from '../apiclient/clients/reviews_client'
 import { GetVenueById } from '../apiclient/clients/venues_client'
 import notyf from '../components/NotyfComponent'
+import { ReviewResource } from '../models/ReviewResource'
 import { VenueDetailsResource } from '../models/VenueResource'
 export default {
   components: { SemipolarSpinner, StarRating },
   data: () => ({
     venue: {} as VenueDetailsResource,
-    venueLoading: true
+    reviews: [] as ReviewResource[],
+    venueLoading: true,
+    reviewsLoading: true
   }),
   mounted: function () {
     this.getVenues()
+    this.getReviews()
   },
   methods: {
     formatRatingNumber(ratingRaw: string) {
@@ -105,12 +110,24 @@ export default {
       this.venueLoading = true
       GetVenueById(this.$route.params.venue_id)
         .then((result) => {
-          console.log('test', result)
           this.venue = result
           this.venueLoading = false
         })
         .catch((err) => {
-          this.venuesLoading = false
+          this.venueLoading = false
+          if (err == 'Network error') return // We handle this error type globally
+          notyf.error(err)
+        })
+    },
+    getReviews: async function () {
+      this.reviewsLoading = true
+      GetReviewsByVenue(this.$route.params.venue_id)
+        .then((result) => {
+          this.reviews = result
+          this.reviewsLoading = false
+        })
+        .catch((err) => {
+          this.reviewsLoading = false
           if (err == 'Network error') return // We handle this error type globally
           notyf.error(err)
         })
