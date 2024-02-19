@@ -13,6 +13,13 @@
       </div>
       <v-carousel show-arrows="hover">
         <v-carousel-item
+          v-if="venue.photos == null || venue.photos.length === 0"
+          src="https://storage.googleapis.com/venue-review-venue-image/default.jpg"
+          lazy-src="https://storage.googleapis.com/venue-review-venue-image/default.jpg"
+          cover
+        ></v-carousel-item>
+        <v-carousel-item
+          v-else
           v-for="image in venue.photos"
           v-bind:key="image.photo_filename"
           :src="image.photo_filename"
@@ -52,6 +59,11 @@
             <p class="white-text">{{ this.venue.city }}</p>
           </div>
         </div>
+      </div>
+      <div class="padder"></div>
+      <div class="padder"></div>
+      <div class="review_container">
+        <h1 class="white-text">Reviews</h1>
       </div>
     </div>
   </div>
@@ -147,5 +159,10 @@ export default {
 }
 .padder {
   height: 0.5rem;
+}
+.review_container {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
 }
 </style>

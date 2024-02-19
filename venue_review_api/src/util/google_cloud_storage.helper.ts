@@ -8,8 +8,6 @@ const storage = new Storage({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 });
 
-const isTest = process.env.NODE_ENV == 'test';
-
 export const uploadFile = async (
   fileName: string,
   fileBuffer: Buffer,

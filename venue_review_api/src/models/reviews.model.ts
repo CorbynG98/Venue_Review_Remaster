@@ -18,7 +18,7 @@ const getVenueReviews = async (
 ): Promise<VenueReviewsResource[]> => {
   try {
     let result = (await poolQuery(
-      `SELECT review_author_id, username, review_body, star_rating, cost_rating, time_posted 
+      `SELECT review_author_id, username, profile_photo_filename, review_body, star_rating, cost_rating, time_posted 
       FROM Review 
       JOIN User ON Review.review_author_id = User.user_id 
       WHERE reviewed_venue_id = ?
@@ -29,9 +29,11 @@ const getVenueReviews = async (
       element.review_author = {
         user_id: element.review_author_id,
         username: element.username,
+        profile_photo_filename: element.profile_photo_filename
       };
       delete element.review_author_id;
       delete element.username;
+      delete element.profile_photo_filename;
     });
     return result;
   } catch (err) {
@@ -79,3 +81,4 @@ const createReview = async (values: string[]): Promise<void> => {
 };
 
 export { checkReviewer, createReview, getVenueReviews };
+
