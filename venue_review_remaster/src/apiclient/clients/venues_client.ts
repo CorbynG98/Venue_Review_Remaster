@@ -82,3 +82,19 @@ export const GetVenueById = async (
     return Promise.reject(err)
   }
 }
+
+export const UpdateVenue = async (
+  venue_id: string,
+  venue_data: VenueDetailsResource,
+  cancelToken: CancelTokenSource | undefined | null = null
+): Promise<void> => {
+  const endpoint = `venues/${venue_id}`
+  try {
+    await axios.patch<void, AxiosResponse<void>>(endpoint, venue_data, {
+      cancelToken: cancelToken?.token
+    })
+    return Promise.resolve()
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}

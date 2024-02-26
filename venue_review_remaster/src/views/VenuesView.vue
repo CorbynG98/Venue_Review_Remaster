@@ -66,8 +66,15 @@
           <v-img
             :src="imageSrc(item.primary_photo)"
             :alt="item.venue_name"
-            fluid
-            style="max-width: 200px; max-height: 200px; min-width: 200px; min-height: 150px"
+            aspect-ratio="16/9"
+            cover
+            style="
+              max-width: 200px;
+              max-height: 150px;
+              min-width: 200px;
+              min-height: 150px;
+              margin: 0.4rem;
+            "
           />
         </td>
       </template>

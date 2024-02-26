@@ -46,6 +46,7 @@ export default {
               v-on:click="goToPage('Venues')"
             ></v-list-item>
             <v-list-item
+              v-if="this.$store.state.isLoggedIn"
               prepend-icon="mdi-account-box"
               title="Profile"
               value="profile"
@@ -64,7 +65,7 @@ export default {
           </template>
         </v-navigation-drawer>
 
-        <v-main style="height: 100vh; background-color: var(--color-background)">
+        <v-main style="background-color: var(--color-background)">
           <RouterView />
         </v-main>
       </v-layout>

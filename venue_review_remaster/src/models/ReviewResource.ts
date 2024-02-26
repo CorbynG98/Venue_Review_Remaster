@@ -1,7 +1,7 @@
 export type ReviewResource = {
   review_body: string | null | undefined
-  star_rating: string | null | undefined
-  cost_rating: string | null | undefined
+  star_rating: number | null | undefined
+  cost_rating: number | null | undefined
   time_posted: string | null | undefined
   review_author: ReviewAuthorResource | null | undefined
 }
