@@ -32,11 +32,11 @@ axiosNodeInstance.interceptors.response.use(
         return Promise.reject('Network error')
       }
       if (error.response.status === 403) {
-        notyf.error('You cannot do that...')
+        // notyf.error('You cannot do that...')
         return Promise.reject('Forbidden')
       }
       if (error.response.status === 401) {
-        notyf.error('Authentication error.')
+        // notyf.error('Authentication error.')
         store.commit('SIGNOUT') // Rejection handled on next in few lines anyways. No need to reject here too.
       }
       return Promise.reject(error || 'Something went wrong')

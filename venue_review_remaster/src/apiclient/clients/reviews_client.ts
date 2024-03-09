@@ -45,3 +45,23 @@ export const GetReviewsByVenue = async (
     return Promise.reject(err)
   }
 }
+
+export const SubmitReview = async (
+  venue_id: string,
+  review_data: any,
+  cancelToken: CancelTokenSource | undefined | null = null
+): Promise<void> => {
+  const endpoint = `venues/${venue_id}/reviews`
+  try {
+    await axios.post<ReviewAuthorResource, AxiosResponse<ReviewAuthorResource>>(
+      endpoint,
+      review_data,
+      {
+        cancelToken: cancelToken?.token
+      }
+    )
+    return Promise.resolve()
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}
