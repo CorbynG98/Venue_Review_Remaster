@@ -7,6 +7,15 @@ export default interface UserResource {
   given_name: string;
   family_name: string;
   password: string;
+  profile_photo_filename: string;
+}
+
+interface UserBasicResource {
+  username: string;
+  email: string;
+  given_name: string;
+  family_name: string;
+  profile_photo_filename: string;
 }
 
 interface UserIdPasswordResource {
@@ -25,6 +34,23 @@ const getUsernameEmailById = async (
       'SELECT username, email FROM User WHERE user_id = ?',
       [user_id],
     )) as UserResource[];
+    if (result == null || result.length == 0) {
+      return null;
+    }
+    return result[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+const getFullUserById = async (
+  user_id: string,
+): Promise<UserBasicResource | null> => {
+  try {
+    const result = (await poolQuery(
+      'SELECT username, given_name, family_name, email, profile_photo_filename FROM User WHERE user_id = ?',
+      [user_id],
+    )) as UserBasicResource[];
     if (result == null || result.length == 0) {
       return null;
     }
@@ -135,12 +161,12 @@ const removePhoto = async (user_id: string): Promise<void> => {
 };
 
 export {
-  createUser,
-  getPhoto,
+  createUser, getFullUserById, getPhoto,
   getUserByEmail,
   getUserByUsername,
   getUsernameEmailById,
   removePhoto,
   updateUser,
-  uploadPhoto,
+  uploadPhoto
 };
+

@@ -3,13 +3,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadPhoto = exports.updateUser = exports.removePhoto = void 0;
+exports.uploadPhoto = exports.updateUser = exports.removePhoto = exports.getMyUserProfile = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const express_validator_1 = require("express-validator");
 const sessions_model_1 = require("../models/sessions.model");
 const users_model_1 = require("../models/users.model");
 const google_cloud_storage_helper_1 = require("../util/google_cloud_storage.helper");
 const userDPBucket = 'venue-review-user-dp';
+const getMyUserProfile = async (req, res) => {
+    let token = req.header('Authorization')?.toString() ?? '';
+    let hashedToken = crypto_1.default.createHash('sha512').update(token).digest('hex');
+    let user_id = (await (0, sessions_model_1.getByToken)(hashedToken));
+    (0, users_model_1.getFullUserById)(user_id).then(user => {
+        res.status(200).json({
+            profile_photo_filename: user?.profile_photo_filename,
+            username: user?.username,
+            given_name: user?.given_name,
+            family_name: user?.family_name,
+            email: user?.email
+        });
+    });
+};
+exports.getMyUserProfile = getMyUserProfile;
 const updateUser = async (req, res) => {
     const validation = (0, express_validator_1.validationResult)(req);
     if (!validation.isEmpty()) {

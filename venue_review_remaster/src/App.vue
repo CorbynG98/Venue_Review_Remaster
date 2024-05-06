@@ -60,7 +60,10 @@ export default {
               prepend-icon="mdi-exit-to-app"
               title="Logout"
               value="logout"
-              v-on:click="this.$store.dispatch('signout')"
+              v-on:click="
+                this.$store.dispatch('signout')
+                goToPage('Home')
+              "
             ></v-list-item>
           </template>
         </v-navigation-drawer>

@@ -28,7 +28,6 @@ import {
 interface Params {
   category_id: string | null;
   admin_id: string | null;
-  city: string | null;
   venue_name: string | null;
 }
 
@@ -40,7 +39,7 @@ function generateConditionsAndValues(params: Params) {
 
   for (const [key, value] of Object.entries(params)) {
     switch (key) {
-      case 'name':
+      case 'venue_name':
         conditions.push(`(v.${key} LIKE ? OR ? IS NULL)`);
         break;
       default:
@@ -79,16 +78,13 @@ const getVenues = async (req: Request, res: Response) => {
       req.query.admin != null && req.query.admin.toString().length > 0
         ? `${req.query.admin?.toString()}`
         : null,
-    city:
-      req.query.city != null && req.query.city.toString().length > 0
-        ? `${req.query.city?.toString()}`
-        : null,
     venue_name:
       req.query.name != null && req.query.name.toString().length > 0
         ? `%${req.query.name?.toString()}%`
         : null,
   };
   const { conditions, condition_values } = generateConditionsAndValues(params);
+  console.log(conditions, condition_values);
 
   let offset =
     req.query.page != null
@@ -342,5 +338,6 @@ export {
   getVenues,
   removePhoto,
   setNewPrimary,
-  updateVenue,
+  updateVenue
 };
+

@@ -1,6 +1,7 @@
 import { Express } from 'express';
 import { check } from 'express-validator';
 import {
+  getMyUserProfile,
   removePhoto,
   updateUser,
   uploadPhoto,
@@ -28,7 +29,9 @@ const validateUserData = [
 ];
 
 const user_routes = (app: Express) => {
-  app.route('/users').patch([...validateUserData, authenticate], updateUser);
+  app.route('/users')
+    .get(authenticate, getMyUserProfile)
+    .patch([...validateUserData, authenticate], updateUser);
 
   app
     .route('/users/photo')

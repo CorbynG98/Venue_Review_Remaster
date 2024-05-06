@@ -18,7 +18,7 @@ function generateConditionsAndValues(params) {
     const condition_values = [];
     for (const [key, value] of Object.entries(params)) {
         switch (key) {
-            case 'name':
+            case 'venue_name':
                 conditions.push(`(v.${key} LIKE ? OR ? IS NULL)`);
                 break;
             default:
@@ -51,14 +51,12 @@ const getVenues = async (req, res) => {
         admin_id: req.query.admin != null && req.query.admin.toString().length > 0
             ? `${req.query.admin?.toString()}`
             : null,
-        city: req.query.city != null && req.query.city.toString().length > 0
-            ? `${req.query.city?.toString()}`
-            : null,
         venue_name: req.query.name != null && req.query.name.toString().length > 0
             ? `%${req.query.name?.toString()}%`
             : null,
     };
     const { conditions, condition_values } = generateConditionsAndValues(params);
+    console.log(conditions, condition_values);
     let offset = req.query.page != null
         ? (Number(req.query.page) - 1) * Number(req.query.limit)
         : 0;

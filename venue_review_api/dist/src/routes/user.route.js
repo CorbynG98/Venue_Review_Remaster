@@ -24,7 +24,9 @@ const validateUserData = [
     (0, express_validator_1.check)('family_name').notEmpty().withMessage('Family name is required'),
 ];
 const user_routes = (app) => {
-    app.route('/users').patch([...validateUserData, user_authenticate_middleware_1.default], user_controller_1.updateUser);
+    app.route('/users')
+        .get(user_authenticate_middleware_1.default, user_controller_1.getMyUserProfile)
+        .patch([...validateUserData, user_authenticate_middleware_1.default], user_controller_1.updateUser);
     app
         .route('/users/photo')
         .put(user_authenticate_middleware_1.default, user_controller_1.uploadPhoto)

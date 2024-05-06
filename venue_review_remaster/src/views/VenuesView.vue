@@ -64,18 +64,31 @@
       <template v-slot:[`item.primary_photo`]="{ item }">
         <td>
           <v-img
-            :src="imageSrc(item.primary_photo)"
+            :src="
+              item.primary_photo ??
+              'https://storage.googleapis.com/venue-review-venue-image/default.jpg'
+            "
             :alt="item.venue_name"
             aspect-ratio="16/9"
             cover
-            style="
-              max-width: 200px;
-              max-height: 150px;
-              min-width: 200px;
-              min-height: 150px;
-              margin: 0.4rem;
-            "
-          />
+            max-width="200px"
+            min-width="200px"
+            max-height="150px"
+            min-height="150px"
+            style="margin: 0.4rem"
+          >
+            <template v-slot:error>
+              <v-img
+                aspect-ratio="16/9"
+                cover
+                max-width="200px"
+                min-width="200px"
+                max-height="150px"
+                min-height="150px"
+                src="https://storage.googleapis.com/venue-review-venue-image/default.jpg"
+              ></v-img>
+            </template>
+          </v-img>
         </td>
       </template>
       <template v-slot:[`item.avg_star_rating`]="{ item }">
@@ -199,7 +212,6 @@ export default {
       }
     },
     resetNameSearch() {
-      console.log('resetNameSearch')
       this.queryParams.name = null
     },
     isValidUrl(url) {

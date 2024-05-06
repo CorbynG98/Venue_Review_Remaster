@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadPhoto = exports.updateUser = exports.removePhoto = exports.getUsernameEmailById = exports.getUserByUsername = exports.getUserByEmail = exports.getPhoto = exports.createUser = void 0;
+exports.uploadPhoto = exports.updateUser = exports.removePhoto = exports.getUsernameEmailById = exports.getUserByUsername = exports.getUserByEmail = exports.getPhoto = exports.getFullUserById = exports.createUser = void 0;
 const db_1 = require("../config/db");
 const getUsernameEmailById = async (user_id) => {
     try {
@@ -15,6 +15,19 @@ const getUsernameEmailById = async (user_id) => {
     }
 };
 exports.getUsernameEmailById = getUsernameEmailById;
+const getFullUserById = async (user_id) => {
+    try {
+        const result = (await (0, db_1.poolQuery)('SELECT username, given_name, family_name, email, profile_photo_filename FROM User WHERE user_id = ?', [user_id]));
+        if (result == null || result.length == 0) {
+            return null;
+        }
+        return result[0];
+    }
+    catch (err) {
+        throw err;
+    }
+};
+exports.getFullUserById = getFullUserById;
 const getUserByEmail = async (email) => {
     try {
         const result = (await (0, db_1.poolQuery)('SELECT user_id, password, given_name, family_name, profile_photo_filename FROM User WHERE email = ? LIMIT 1', [email]));

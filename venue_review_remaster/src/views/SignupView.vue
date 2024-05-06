@@ -137,6 +137,7 @@ export default {
         this.signupLoading = false
         this.$router.push('/Home')
       } catch (err) {
+        notyf.error(err.response.data.message)
         this.signupLoading = false
       }
     }

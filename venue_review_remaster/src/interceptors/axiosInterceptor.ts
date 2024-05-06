@@ -33,7 +33,7 @@ axiosNodeInstance.interceptors.response.use(
       }
       if (error.response.status === 403) {
         // notyf.error('You cannot do that...')
-        return Promise.reject('Forbidden')
+        return Promise.reject(error.response.data.message || 'Forbidden')
       }
       if (error.response.status === 401) {
         // notyf.error('Authentication error.')

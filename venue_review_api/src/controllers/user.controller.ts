@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { getByToken as get_session_by_token } from '../models/sessions.model';
 import {
+  getFullUserById as get_full_user_by_id,
   getUserByEmail as get_user_by_email,
   getUsernameEmailById as get_user_by_id,
   getUserByUsername as get_user_by_username,
@@ -17,6 +18,22 @@ import {
 } from '../util/google_cloud_storage.helper';
 
 const userDPBucket = 'venue-review-user-dp';
+
+const getMyUserProfile = async (req: Request, res: Response) => {
+  let token = req.header('Authorization')?.toString() ?? '';
+  let hashedToken = crypto.createHash('sha512').update(token).digest('hex');
+  let user_id = (await get_session_by_token(hashedToken)) as string;
+  get_full_user_by_id(user_id).then(user => {
+    res.status(200).json({
+      profile_photo_filename: user?.profile_photo_filename,
+      username: user?.username,
+      given_name: user?.given_name,
+      family_name: user?.family_name,
+      email: user?.email
+    });
+  });
+  
+}
 
 const updateUser = async (req: Request, res: Response) => {
   const validation = validationResult(req);
@@ -134,4 +151,5 @@ const removePhoto = async (req: Request, res: Response) => {
     });
 };
 
-export { removePhoto, updateUser, uploadPhoto };
+export { getMyUserProfile, removePhoto, updateUser, uploadPhoto };
+

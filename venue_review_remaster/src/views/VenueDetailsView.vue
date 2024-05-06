@@ -319,17 +319,18 @@
         </div>
       </div>
     </div>
-    <v-dialog
-      v-model="reviewModalActive"
-      width="auto"
-    >
-      <v-card
-        width="500"
-        title="Leave a review"
-      >
-        <hr style="width: 100%; margin-bottom: 0.5rem; margin-top: 1rem;" />
+    <v-dialog v-model="reviewModalActive" width="auto">
+      <v-card width="500" title="Leave a review">
+        <hr style="width: 100%; margin-bottom: 0.5rem; margin-top: 1rem" />
         <v-form v-model="reviewValid">
-          <div style="display: flex; justify-content: space-between; padding-left: 1rem; padding-right: 1rem">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              padding-left: 1rem;
+              padding-right: 1rem;
+            "
+          >
             <star-rating
               v-model="reviewData.star_rating"
               :rating="reviewData.star_rating"
@@ -338,7 +339,10 @@
               :show-rating="false"
               :star-size="20"
             ></star-rating>
-            <div style="display: flex; height: 2.5rem; margin-left: 1rem; width: 7rem" class="custom-select-wrapper">
+            <div
+              style="display: flex; height: 2.5rem; margin-left: 1rem; width: 7rem"
+              class="custom-select-wrapper"
+            >
               <select v-model="reviewData.cost_rating" class="custom-select">
                 <option value="1">Free</option>
                 <option value="2">$</option>
@@ -348,7 +352,7 @@
               </select>
             </div>
           </div>
-          <div style="padding: 0.5rem 1rem;">
+          <div style="padding: 0.5rem 1rem">
             <v-textarea
               style="background-color: white"
               v-model="reviewData.review_body"
@@ -367,10 +371,7 @@
             <p v-if="!reviewSubmitting" style="font-weight: bold">Submit</p>
             <semipolar-spinner v-else :animation-duration="2000" :size="20" :color="'#000000'" />
           </v-btn>
-          <v-btn
-            text="Cancel"
-            @click="cancelReview()"
-          ></v-btn>
+          <v-btn text="Cancel" @click="cancelReview()"></v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -405,9 +406,9 @@ export default {
     reviewValid: false,
     reviewData: {
       star_rating: 3,
-      cost_rating: "2",
+      cost_rating: '2',
       review_body: ''
-    },
+    }
   }),
   mounted: function () {
     this.getVenues()
@@ -442,49 +443,54 @@ export default {
         })
     },
     submitReview() {
-      if (this.reviewSubmitting ||
-      this.reviewData.review_body == null || this.reviewData.review_body.length <= 5) {
-          notyf.error('Please fill out the review form correctly');
-          return;
+      if (
+        this.reviewSubmitting ||
+        this.reviewData.review_body == null ||
+        this.reviewData.review_body.length <= 5
+      ) {
+        notyf.error('Please fill out the review form correctly')
+        return
       }
-      this.reviewSubmitting = true;
+      this.reviewSubmitting = true
       SubmitReview(this.$route.params.venue_id, this.reviewData)
         .then(() => {
-          this.reviewSubmitting = false;
-          this.reviewModalActive = false;
+          this.reviewSubmitting = false
+          this.reviewModalActive = false
           this.reviewData = {
             star_rating: 3,
-            cost_rating: "3",
+            cost_rating: '3',
             review_body: ''
           }
           notyf.success('Review submitted!')
           this.getReviews()
         })
         .catch((err) => {
-          this.reviewSubmitting = false;
+          this.reviewSubmitting = false
           if (err == 'Network error') return // We handle this error type globally
           notyf.error(err)
         })
     },
     cancelReview() {
-      this.reviewModalActive = false;
-      this.reviewSubmitting = false;
+      this.reviewModalActive = false
+      this.reviewSubmitting = false
       this.reviewData = {
         star_rating: 3,
-        cost_rating: "2",
+        cost_rating: '2',
         review_body: ''
       }
     },
     categoryUpdated() {
       if (this.selectedCategory) {
-        const category = this.categories.find((cat: CategoryeResource) => cat.category_id === this.selectedCategory)
+        const category = this.categories.find(
+          (cat: CategoryeResource) => cat.category_id === this.selectedCategory
+        )
         this.venue.category_name = category.category_name
         this.venue.category_id = category.category_id
         this.venue.category_description = category.category_description
       }
     },
     openReviewModal() {
-      this.reviewModalActive = true;
+      this.reviewModalActive = true
     },
     formatRatingNumber(ratingRaw: string) {
       if (ratingRaw === null || ratingRaw === undefined) {

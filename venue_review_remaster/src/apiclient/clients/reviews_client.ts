@@ -2,32 +2,6 @@ import { ReviewAuthorResource } from '@/models/ReviewResource'
 import { AxiosResponse, CancelTokenSource } from 'axios'
 import { axiosNodeInstance as axios } from '../../interceptors/axiosInterceptor'
 
-// export type VenueQueryParams = {
-//   longitude: number
-//   latitude: number
-//   limit: number
-//   page: number
-//   category: string
-//   admin: string
-//   name: string
-//   maxCostRating: 0 | 1 | 2 | 3 | 4 | 5
-//   minStarRating: 0 | 1 | 2 | 3 | 4 | 5
-//   sortBy: 'avg_star_rating' | 'avg_cost_rating' | 'distance'
-//   isDesc: boolean
-// }
-
-// Leaving this here for now. Will probably implement paging for reviews soon, so will need some params for that.
-// function convertParamsToStrings(params: Record<string, any>): Record<string, string> {
-//   const stringParams: Record<string, string> = {}
-//   Object.keys(params).forEach((key) => {
-//     if (params[key] === null || params[key] === undefined) {
-//       return
-//     }
-//     stringParams[key] = String(params[key])
-//   })
-//   return stringParams
-// }
-
 export const GetReviewsByVenue = async (
   venue_id: string,
   cancelToken: CancelTokenSource | undefined | null = null
