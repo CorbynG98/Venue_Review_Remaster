@@ -1,4 +1,4 @@
-name: Express.JS Build and Test
+name: VueJS Website Build and Deploy
 
 on:
   workflow_dispatch:
