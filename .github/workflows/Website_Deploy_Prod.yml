@@ -21,7 +21,7 @@ env:
   IMAGE_NAME: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_APP_NAME }}/venue.review.website.remastered
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-website-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
