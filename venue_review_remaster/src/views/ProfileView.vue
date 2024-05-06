@@ -229,7 +229,6 @@
 <script lang="ts">
 import { SemipolarSpinner } from 'epic-spinners'
 import { toRaw } from 'vue'
-import StarRating from 'vue-star-rating'
 import {
   GetMyUserProfile,
   RemoveProfilePhoto,
@@ -239,7 +238,7 @@ import {
 import notyf from '../components/NotyfComponent'
 import { UserBasicResource } from '../models/UserBasicResource'
 export default {
-  components: { SemipolarSpinner, StarRating },
+  components: { SemipolarSpinner },
   data: () => ({
     profile: {} as UserBasicResource,
     profileLoading: true,
@@ -284,7 +283,7 @@ export default {
     },
     uploadProfilePhoto: function () {
       if (this.profilePhotoUploading || this.newPhoto == null) return
-      let previousImage = this.profile.profile_photo_filename
+      const previousImage = this.profile.profile_photo_filename
       this.profilePhotoUploading = true
       this.profile.profile_photo_filename = this.imagePreview
       this.dialog = false
@@ -303,7 +302,7 @@ export default {
       if (this.profile.profile_photo_filename == null) return
       this.deleteConfirmDialog = false
       this.dialog = false
-      let photoUrl = this.profile.profile_photo_filename
+      const photoUrl = this.profile.profile_photo_filename
       this.profile.profile_photo_filename = null
       RemoveProfilePhoto().catch(() => {
         notyf.error('Failed to remove profile photo')

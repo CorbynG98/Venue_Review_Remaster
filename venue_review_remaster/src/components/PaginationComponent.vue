@@ -99,42 +99,58 @@ export default {
   align-items: center;
   cursor: pointer;
 }
+
 .pageBtn:disabled {
   pointer-events: none;
   background-color: #909090;
   cursor: default;
 }
+
 .pageBtn:hover {
   background-color: #909090;
   cursor: pointer;
 }
+
 .mdi {
-  font-size: 1.5rem; /* Adjust the size as needed */
-  color: black; /* Adjust the color as needed */
+  font-size: 1.5rem;
+  /* Adjust the size as needed */
+  color: black;
+  /* Adjust the color as needed */
 }
+
 .custom-select-wrapper {
   position: relative;
 }
+
 .custom-select {
-  appearance: none; /* Remove default styling */
+  appearance: none;
+  /* Remove default styling */
   flex-grow: 1;
   background-color: white;
-  border: 1px solid #ced4da; /* Add custom border */
-  border-radius: 0.25rem; /* Optional: round the corners */
+  border: 1px solid #ced4da;
+  /* Add custom border */
+  border-radius: 0.25rem;
+  /* Optional: round the corners */
   position: relative;
-  -webkit-appearance: none; /* For Safari */
+  -webkit-appearance: none;
+  /* For Safari */
   padding-left: 0.3rem;
   padding-right: 0.3rem;
 }
+
 .custom-select-wrapper::after {
-  content: '▼'; /* Add arrow icon */
+  content: '▼';
+  /* Add arrow icon */
   position: absolute;
   right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  pointer-events: none; /* Prevent the arrow from being clickable */
-  color: #343a40; /* Arrow color */
+  pointer-events: none;
+  /* Prevent the arrow from being clickable */
+  color: #343a40;
+  /* Arrow color */
 }
+
 .inputBox {
   background-color: white;
   border-radius: 4px;

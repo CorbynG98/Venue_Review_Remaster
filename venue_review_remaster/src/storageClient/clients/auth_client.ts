@@ -14,7 +14,7 @@ export const setAuthDataCookie = (data: AuthCookie) => {
 
 export const getAuthCookie = () => {
   const { cookies } = useCookies()
-  var cookie = cookies.get('authData')
+  const cookie = cookies.get('authData')
   return cookie as unknown as AuthCookie
 }
 

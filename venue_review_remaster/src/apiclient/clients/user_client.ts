@@ -38,8 +38,7 @@ export const UpdateProfilePhoto = async (
   cancelToken: CancelTokenSource | undefined | null = null
 ): Promise<void> => {
   const endpoint = '/users/photo'
-  console.log('photo', photo)
-  let data = new FormData()
+  const data = new FormData()
   data.append('photo', photo)
   try {
     await axios.put<void, AxiosResponse<void>>(endpoint, data, {

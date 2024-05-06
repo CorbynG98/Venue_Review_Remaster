@@ -6,7 +6,7 @@ export const Authenticate = async (
   data: AuthResource,
   cancelToken: CancelTokenSource | undefined | null = null
 ): Promise<AuthData> => {
-  let body = new FormData()
+  const body = new FormData()
   body.append('username', data.username ?? '')
   body.append('password', data.password ?? '')
   const endpoint = '/auth/signin'
@@ -14,7 +14,7 @@ export const Authenticate = async (
     const response = await axios.post<AuthResource, AxiosResponse<AuthData>>(endpoint, body, {
       cancelToken: cancelToken?.token
     })
-    var auth = {
+    const auth = {
       username: response.data.username,
       token: response.data.token,
       fullName: response.data.fullName,
@@ -30,7 +30,7 @@ export const Signup = async (
   data: AuthResource,
   cancelToken: CancelTokenSource | undefined | null = null
 ): Promise<AuthData> => {
-  let body = new FormData()
+  const body = new FormData()
   body.append('username', data.username ?? '')
   body.append('password', data.password ?? '')
   const endpoint = '/auth/signup'
@@ -38,7 +38,7 @@ export const Signup = async (
     const response = await axios.post<AuthResource, AxiosResponse<AuthData>>(endpoint, body, {
       cancelToken: cancelToken?.token
     })
-    var auth = {
+    const auth = {
       username: response.data.username,
       token: response.data.token,
       fullName: response.data.fullName,

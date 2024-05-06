@@ -61,8 +61,10 @@ export default {
               title="Logout"
               value="logout"
               v-on:click="
-                this.$store.dispatch('signout')
-                goToPage('Home')
+                () => {
+                  this.$store.dispatch('signout')
+                  goToPage('Home')
+                }
               "
             ></v-list-item>
           </template>

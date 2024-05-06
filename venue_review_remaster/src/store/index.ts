@@ -59,7 +59,7 @@ export const store = createStore<State>({
       userData: UserSignupData,
       cancelToken: CancelTokenSource | undefined | null = null
     ) {
-      var result = await Signup(userData, cancelToken)
+      const result = await Signup(userData, cancelToken)
       setAuthDataCookie({
         username: result?.username,
         token: result?.token,
@@ -78,7 +78,7 @@ export const store = createStore<State>({
       credentials: AuthResource,
       cancelToken: CancelTokenSource | undefined | null = null
     ) {
-      var result = await Authenticate(credentials, cancelToken)
+      const result = await Authenticate(credentials, cancelToken)
       setAuthDataCookie({
         username: result?.username,
         token: result?.token,

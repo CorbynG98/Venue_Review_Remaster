@@ -17,7 +17,9 @@ export type VenueQueryParams = {
   isDesc: boolean
 }
 
-function convertParamsToStrings(params: Record<string, any>): Record<string, string> {
+type QueryParamValue = string | number | boolean | null
+
+function convertParamsToStrings(params: Record<string, QueryParamValue>): Record<string, string> {
   const stringParams: Record<string, string> = {}
   Object.keys(params).forEach((key) => {
     if (params[key] === null || params[key] === undefined) {
@@ -49,7 +51,7 @@ export const GetVenues = async (
   data: VenueQueryParams,
   cancelToken: CancelTokenSource | undefined | null = null
 ): Promise<VenueSummaryResource[]> => {
-  let strifiedParams = convertParamsToStrings(data)
+  const strifiedParams = convertParamsToStrings(data)
   const queryParams = new URLSearchParams(strifiedParams).toString()
   const endpoint = `venues?${queryParams}`
   try {

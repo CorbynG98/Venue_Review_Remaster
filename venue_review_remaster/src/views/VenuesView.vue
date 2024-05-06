@@ -129,7 +129,6 @@
 </template>
 
 <script lang="ts">
-import { SemipolarSpinner } from 'epic-spinners'
 import { debounce } from 'lodash'
 import StarRating from 'vue-star-rating'
 import { GetCategories, GetVenues, VenueQueryParams } from '../apiclient/clients/venues_client'
@@ -139,7 +138,7 @@ import { CategoryeResource } from '../models/CategoryResource'
 import { VenueSummaryResource } from '../models/VenueResource'
 
 export default {
-  components: { SemipolarSpinner, StarRating, CustomPaginationComponent },
+  components: { StarRating, CustomPaginationComponent },
   data: () => ({
     headers: [
       { title: 'Image', align: 'start', key: 'primary_photo', sortable: false },
@@ -188,7 +187,7 @@ export default {
     },
     selectedSortBy: {
       handler: debounce(function () {
-        let sortBySplit = this.selectedSortBy.split('-')
+        const sortBySplit = this.selectedSortBy.split('-')
         this.isDistanceSort = sortBySplit[0] === 'distance'
         this.queryParams.sortBy = sortBySplit[0]
         this.queryParams.isDesc = sortBySplit[1] === 'desc'

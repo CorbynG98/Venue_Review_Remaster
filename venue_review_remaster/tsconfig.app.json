@@ -10,6 +10,7 @@
   "exclude": ["src/**/__tests__/*"],
   "allowSyntheticDefaultImports": true,
   "resolveJsonModule": true,
+  "allowImplicitAny": true,
   "compilerOptions": {
     "resolveJsonModule": true,
     "esModuleInterop": true,

@@ -10,6 +10,8 @@ import './assets/main.css'
 import router from './router'
 import store from './store'
 
+window.global ||= window
+
 const app = createApp(App)
 
 const vuetify = createVuetify({

@@ -15,13 +15,15 @@ const notyf = new Notyf({
 
 axiosNodeInstance.interceptors.request.use(async (config: any) => {
   // Get data from async storage for processing reasons
-  let auth = await getAuthCookie()
+  const auth = await getAuthCookie()
   if (auth != null && auth.token != null) {
     config.headers.Authorization = `${auth.token}`
   }
   return config
 })
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 axiosNodeInstance.interceptors.response.use(
   (response: any) => response,
   (error: any) => {

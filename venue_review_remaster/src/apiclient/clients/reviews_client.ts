@@ -22,7 +22,7 @@ export const GetReviewsByVenue = async (
 
 export const SubmitReview = async (
   venue_id: string,
-  review_data: any,
+  review_data: ReviewAuthorResource,
   cancelToken: CancelTokenSource | undefined | null = null
 ): Promise<void> => {
   const endpoint = `venues/${venue_id}/reviews`
